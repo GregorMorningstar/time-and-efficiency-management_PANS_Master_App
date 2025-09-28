@@ -26,7 +26,7 @@ return new class extends Migration
                 array_map(fn($c) => $c->value, EducationsDegree::cases())
             )->index();
 
-            // Nazwa szkoły 
+            // Nazwa szkoły
             $table->string('school');
 
             // Dane adresowe
@@ -40,6 +40,9 @@ return new class extends Migration
             $table->unsignedSmallInteger('start_year');
             $table->unsignedSmallInteger('end_year')->nullable();
 
+            // czy szkoła trwa
+
+            $table->boolean('is_current')->default(false);
             // Ścieżka do pliku (zmienione z diploma_scan_path)
             $table->string('diploma_path')->nullable();
 

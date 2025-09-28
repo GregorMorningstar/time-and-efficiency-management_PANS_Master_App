@@ -1,6 +1,6 @@
 import React from 'react';
 import { Head, usePage } from '@inertiajs/react';
-import EmployeeLayout from './employee-layout';
+import EmployeeLayout from '../employee/employee-layout';
 import EducationAddSchoolCard from '@/components/card/education-add-school-card';
 
 interface LevelOption { value: string; label: string }

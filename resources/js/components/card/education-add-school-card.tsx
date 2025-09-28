@@ -15,18 +15,19 @@ export default function EducationAddSchoolCard({ levels, storeRoute = 'employee.
 	const [preview, setPreview] = useState<string | null>(null);
 
 	const { data, setData, post, processing, errors, reset, progress } = useForm({
-        school: '',
-        address: '',
-        city: '',
-        start_date: '',
-        end_date: '',
-        start_year: '',
-        end_year: '',
-        zip_code: '',
-        level: levels[0]?.value || '',
-        diploma: null as File | null,
-        user_id: userId ?? '',
-        rodo_accept: false, // NEW
+    school: '',
+    address: '',
+    city: '',
+    start_date: '',
+    end_date: '',
+    start_year: '',
+    end_year: '',
+    zip_code: '',
+    level: levels[0]?.value || '',
+    diploma: null as File | null,
+    user_id: userId ?? '',
+    rodo_accept: false,
+    is_current: false, 
 	});
 
 	const [clientErrors, setClientErrors] = useState<Record<string,string>>({});
@@ -94,7 +95,8 @@ export default function EducationAddSchoolCard({ levels, storeRoute = 'employee.
 
 		// Uzupełnij pola zależne
 		if (data.start_date) setData('start_year', data.start_date.substring(0,4));
-		if (data.end_date) setData('end_year', data.end_date.substring(0,4));
+		if (data.end_date && !data.is_current) setData('end_year', data.end_date.substring(0,4));
+		if (data.is_current) setData('end_date', ''); // <--- WYCZYŚĆ DATĘ ZAKOŃCZENIA JEŚLI W TRAKCIE
 
 		if (!data.user_id && userId) setData('user_id', String(userId));
 
@@ -203,8 +205,21 @@ export default function EducationAddSchoolCard({ levels, storeRoute = 'employee.
 										onChange={e => { setData('end_date', e.target.value); validateField('end_date', e.target.value); }}
 										className="w-full rounded-md border-slate-300 dark:border-slate-600 dark:bg-slate-700/50 dark:text-slate-100 focus:border-emerald-500 focus:ring-emerald-500 text-sm"
 										min={data.start_date || undefined}
+										disabled={data.is_current} // <--- WYŁĄCZ JEŚLI W TRAKCIE
 									/>
 									{(clientErrors.end_date || errors.end_date) && <p className="text-xs text-red-500 mt-0.5">{clientErrors.end_date || (errors as any).end_date}</p>}
+									<div className="flex items-center mt-2">
+										<input
+											type="checkbox"
+											id="is_current"
+											checked={!!data.is_current}
+											onChange={e => setData('is_current', e.target.checked)}
+											className="mr-2 h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 dark:border-slate-600 dark:bg-slate-700"
+										/>
+										<label htmlFor="is_current" className="text-xs text-slate-600 dark:text-slate-300">
+											Szkoła w trakcie nauki
+										</label>
+									</div>
 								</div>
 							</div>
 						</div>

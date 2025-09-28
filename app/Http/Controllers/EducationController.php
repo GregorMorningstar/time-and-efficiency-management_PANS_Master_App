@@ -11,11 +11,17 @@ use Illuminate\Support\Facades\Auth;
 
 class EducationController extends Controller
 {
-    public function index(EducationService $service)
-    {
-        $educations = $service->paginatedFor(request()->user(), 20); // jeśli masz inną metodę paginacji – dostosuj
+    protected $service;
 
-        return Inertia::render('employee/education', [
+    public function __construct(EducationService $service)
+    {
+        $this->service = $service;
+    }
+
+    public function index()
+    {
+        $educations = $this->service->paginatedFor(request()->user(), 20);
+        return Inertia::render('education/education', [
             'educations'      => $educations,
             'educationLevels' => EducationsDegree::selectOptions(),
         ]);
@@ -23,15 +29,16 @@ class EducationController extends Controller
 
     public function addEducation()
     {
-        return Inertia::render('employee/add-education', [
+        return Inertia::render('education/add-education', [
             'educationDegrees' => EducationsDegree::selectOptions(),
         ]);
     }
 
-    public function store(Request $request, EducationService $service)
+    public function store(Request $request)
     {
         $validated = $request->validate([
             'school'      => 'required|string|min:2|max:255',
+            'is_current'   => 'boolean',
             'address'     => 'nullable|string|max:255',
             'zip_code'    => 'nullable|regex:/^[0-9]{2}-?[0-9]{3}$/',
             'city'        => 'required|string|min:2|max:120',
@@ -42,14 +49,12 @@ class EducationController extends Controller
             'rodo_accept' => 'accepted',
         ]);
 
-        $service->createEducation($request->user(), $validated, $request->file('diploma'));
+        $this->service->createEducation($request->user(), $validated, $request->file('diploma'));
 
         if (! $request->user()->education_completed) {
             $request->user()->forceFill(['education_completed' => true])->save();
         }
 
-        return redirect()
-            ->route('employee.education')
-            ->with('success', 'Szkoła dodana.');
+        return redirect()->route('employee.education')->with('success', 'Szkoła dodana.');
     }
 }

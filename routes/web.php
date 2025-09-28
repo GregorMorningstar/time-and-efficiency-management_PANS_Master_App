@@ -7,6 +7,8 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\EducationController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\ModeratorController;
+use App\Http\Controllers\CompanyLookupController;
+use App\Http\Controllers\CareerController;
 use Illuminate\Support\Facades\Auth;
 
 Route::get('/', function () {
@@ -37,15 +39,17 @@ Route::middleware(['auth','verified','role:moderator'])->prefix('/moderator')->g
 
 //employee (role check temporarily disabled in revert state)
 Route::middleware(['auth','verified','role:employee','flags'])->prefix('/employee')->group(function () {
-      
+
     Route::get('/dashboard', [EmployeeController::class, 'index'])->name('employee.dashboard');
     //education routes
     Route::get('/education', [EducationController::class, 'index'])->name('employee.education');
     Route::get('/education/add', [EducationController::class, 'addEducation'])->name('employee.education.add');
     Route::post('/education', [EducationController::class, 'store'])->name('employee.education.store');
-   
+
    //career routes
-    Route::get('/career', [EmployeeController::class, 'career'])->name('employee.career');
+  Route::get('/career/add', [CareerController::class, 'create'])->name('employee.career.add');
+    Route::get('/api/company/lookup', [CareerController::class, 'lookup'])->name('api.company.lookup');
+
 
     //address routes
     Route::get('/address', [EmployeeController::class, 'address'])->name('employee.address');
@@ -57,7 +61,7 @@ Route::middleware(['auth','verified','role:employee','flags'])->prefix('/employe
 Route::middleware('auth')->group(function () {
     Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
     Route::post('/chat', [ChatController::class, 'store'])->name('chat.store');
-}); 
+});
 
 Route::fallback(function () {
     $user = Auth::user();
