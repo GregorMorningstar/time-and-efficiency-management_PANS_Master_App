@@ -34,14 +34,17 @@ export default function EmployeeTopNav() {
         { label: 'Dodaj szkołę', href: '/employee/education/add' },
       ],
     },
+    //kariera
     {
       label: 'Kariera',
-      baseHref: '/employee/experience',
+      baseHref: '/employee/career',
       children: [
-        { label: 'Historia', href: '/employee/experience' },
-        { label: 'Dodaj', href: '/employee/experience/add' },
+        { label: 'Historia', href: '/employee/career' },
+        { label: 'Dodaj', href: '/employee/career/add' },
       ],
     },
+
+//adres
     { label: 'Adres',
        baseHref: '/employee/address',
       children: [
@@ -49,6 +52,8 @@ export default function EmployeeTopNav() {
         { label: 'Dodaj adres', href: '/employee/address/add' },
       ],
     },
+
+    //kalendarz
     { label: 'Kalendarz',
       baseHref: '/employee/calendar',
       children: [

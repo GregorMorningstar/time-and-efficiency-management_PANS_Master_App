@@ -1,11 +1,13 @@
 import React from 'react';
-import CareerNipInput from '../../components/card/career-nip-input';
+import EmployeeLayout from '../employee/employee-layout';
+import CareerAddForm from '@/components/card/career-add-form';
 
 export default function AddCareerPage() {
   return (
-    <div className="p-4">
-      <h1 className="mb-4 text-lg font-semibold">Dodaj przebieg kariery</h1>
-      <CareerNipInput />
-    </div>
+    <EmployeeLayout title="Dodaj przebieg kariery">
+      <div className="p-4">
+        <CareerAddForm />
+      </div>
+    </EmployeeLayout>
   );
 }

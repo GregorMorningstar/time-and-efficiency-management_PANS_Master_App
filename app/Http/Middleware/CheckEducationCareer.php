@@ -52,12 +52,14 @@ class CheckEducationCareer
                 'employee.education.add',
                 'employee.education.store',
                 'employee.career',
+                'employee.career.store',
                 'employee.address',
                 'employee.address.add',
                 'employee.address.store',
                 'api.company.lookup',
                 'employee.career.add',
-                
+
+
             ];
 
             $currentName = $request->route()?->getName();

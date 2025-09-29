@@ -26,6 +26,8 @@ return new class extends Migration
                 array_map(fn($c) => $c->value, EducationsDegree::cases())
             )->index();
 
+
+                $table->string('barcode', 13)->unique()->nullable();
             // Nazwa szkoły
             $table->string('school');
 

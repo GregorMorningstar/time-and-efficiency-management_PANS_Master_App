@@ -42,6 +42,9 @@ class NipService
                 return ['ok' => false, 'error' => 'Nie znaleziono danych firmy'];
             }
 
+            $addr = $subject['workingAddress'] ?? ($subject['residenceAddress'] ?? null);
+            [$street, $zip, $city] = $this->splitAddress((string) $addr);
+
             return [
                 'ok' => true,
                 'nip' => $subject['nip'] ?? $nipClean,
@@ -49,8 +52,24 @@ class NipService
                 'regon' => $subject['regon'] ?? null,
                 'krs' => $subject['krs'] ?? null,
                 'statusVat' => $subject['statusVat'] ?? null,
-                'address' => $subject['workingAddress'] ?? ($subject['residenceAddress'] ?? null),
+                'address' => $addr,
+                'street' => $street,
+                'zip' => $zip,
+                'city' => $city,
             ];
         });
+    }
+
+    private function splitAddress(string $addr): array
+    {
+        if ($addr === '') return [null, null, null];
+        $parts = array_map('trim', explode(',', $addr, 2));
+        $street = $parts[0] ?? null;
+        $zip = null; $city = null;
+        if (!empty($parts[1]) && preg_match('/(\d{2}-\d{3})\s+(.+)/u', $parts[1], $m)) {
+            $zip = $m[1] ?? null;
+            $city = $m[2] ?? null;
+        }
+        return [$street, $zip, $city];
     }
 }

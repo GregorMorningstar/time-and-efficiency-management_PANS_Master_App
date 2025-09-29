@@ -9,7 +9,19 @@ type CompanyData = {
   address?: string | null;
   statusVat?: string | null;
   error?: string;
+  street?: string | null; // <-- nowe opcjonalne pola
+  zip?: string | null;
+  city?: string | null;
 };
+
+function parseAddress(addr?: string | null) {
+  if (!addr) return { street: '', zip: '', city: '' };
+  const [streetPart, rest] = addr.split(',', 2).map(s => s.trim());
+  let zip = '', city = '';
+  const m = rest?.match(/(\d{2}-\d{3})\s+(.+)/);
+  if (m) { zip = m[1]; city = m[2]; }
+  return { street: streetPart || '', zip, city };
+}
 
 export default function CareerNipInput({ onFill }: { onFill?: (data: Partial<CompanyData>) => void }) {
   const [nip, setNip] = useState('');
@@ -44,10 +56,19 @@ export default function CareerNipInput({ onFill }: { onFill?: (data: Partial<Com
         return;
       }
       setCompany(json);
-      onFill?.({ name: json.name ?? undefined, address: json.address ?? undefined });
+      onFill?.({
+        name: json.name ?? undefined,
+        street: json.street ?? undefined,
+        zip: json.zip ?? undefined,
+        city: json.city ?? undefined,
+        buildingNumber: json.buildingNumber ?? undefined,
+        apartmentNumber: json.apartmentNumber ?? undefined,
+        nip: json.nip ?? undefined,
+      });
     } catch {
       setError('Błąd połączenia z serwerem');
     } finally {
+        console.log(company)
       setLoading(false);
     }
   }
@@ -79,10 +100,13 @@ export default function CareerNipInput({ onFill }: { onFill?: (data: Partial<Com
         <div className="rounded-md border border-slate-200 bg-slate-50 p-3 text-sm dark:border-slate-700 dark:bg-slate-800/60">
           <div className="font-semibold text-slate-800 dark:text-slate-100">{company.name}</div>
           <div className="mt-1 grid grid-cols-2 gap-2">
+            <div>Ulica: {company.street || '—'}</div>
+            <div>Kod: {company.zip || '—'}</div>
+            <div className="col-span-2">Miasto: {company.city || '—'}</div>
             <div>NIP: {company.nip}</div>
             {company.regon && <div>REGON: {company.regon}</div>}
             {company.krs && <div>KRS: {company.krs}</div>}
-            <div className="col-span-2">Adres: {company.address || '—'}</div>
+            <div className="col-span-2">Adres (oryg.): {company.address || '—'}</div>
             {company.statusVat && <div className="col-span-2">Status VAT: {company.statusVat}</div>}
           </div>
         </div>

@@ -47,6 +47,8 @@ Route::middleware(['auth','verified','role:employee','flags'])->prefix('/employe
     Route::post('/education', [EducationController::class, 'store'])->name('employee.education.store');
 
    //career routes
+    Route::get('/career', [CareerController::class, 'index'])->name('employee.career');
+    Route::post('/career', [CareerController::class, 'store'])->name('employee.career.store');
   Route::get('/career/add', [CareerController::class, 'create'])->name('employee.career.add');
     Route::get('/api/company/lookup', [CareerController::class, 'lookup'])->name('api.company.lookup');
 

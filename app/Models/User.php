@@ -23,7 +23,7 @@ class User extends Authenticatable
         'password',
         'role',
         'email_verified_at',
-        
+
     ];
 
     /**
@@ -54,6 +54,10 @@ class User extends Authenticatable
         return $this->hasMany(Educations::class);
     }
 
+    public function experiences()
+    {
+        return $this->hasMany(Experiences::class);
+    }
 
     //function
 

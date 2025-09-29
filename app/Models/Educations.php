@@ -22,6 +22,7 @@ class Educations extends Model
         'diploma_path',
         'rodo_accepted',
         'rodo_accepted_at',
+        'barcode',
     ];
 
     protected $casts = [
@@ -32,11 +33,21 @@ class Educations extends Model
         'rodo_accepted_at'=> 'datetime',
     ];
 
-    public function user(): BelongsTo
+    protected static function booted()
+    {
+        static::created(function (Education $education) {
+            if (!$education->barcode) {
+                $prefix = '8800';
+                $barcode = $prefix . str_pad((string) $education->id, 13 - strlen($prefix), '0', STR_PAD_LEFT);
+                $education->updateQuietly(['barcode' => $barcode]);
+            }
+        });
+    }
+
+    public function user()
     {
         return $this->belongsTo(User::class);
     }
-
     public function levelLabel(): string
     {
         return $this->level instanceof EducationsDegree

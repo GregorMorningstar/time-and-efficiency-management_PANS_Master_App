@@ -13,6 +13,20 @@ return new class extends Migration
     {
         Schema::create('experiences', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->string('company_name');
+            $table->string('position');
+                        $table->text('responsibilities')->nullable();
+            $table->integer('barcode')->nullable();
+            $table->string('street');
+            $table->string('zip_code');
+            $table->string('city');
+            $table->string('nip');
+            $table->date('start_date');
+            $table->date('end_date')->nullable();
+            $table->boolean('is_current')->default(false);
+            $table->string('work_certificate_scan_path')->nullable();
+
             $table->timestamps();
         });
     }
