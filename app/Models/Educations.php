@@ -35,8 +35,9 @@ class Educations extends Model
 
     protected static function booted()
     {
-        static::created(function (Education $education) {
-            if (!$education->barcode) {
+        // Use `self` here so the closure receives the actual model instance (App\Models\Educations)
+        static::created(function (self $education) {
+            if (! $education->barcode) {
                 $prefix = '8800';
                 $barcode = $prefix . str_pad((string) $education->id, 13 - strlen($prefix), '0', STR_PAD_LEFT);
                 $education->updateQuietly(['barcode' => $barcode]);

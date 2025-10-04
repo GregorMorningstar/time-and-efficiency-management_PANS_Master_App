@@ -22,10 +22,6 @@ class EducationService
     }
 
 
-    public function paginatedFor(User $user, int $perPage = 15): LengthAwarePaginator
-    {
-        return $this->educationRepository->getAllEducationsByUserIdPaginated($user->id, $perPage);
-    }
 
     public function create(array $data)
     {
@@ -70,6 +66,27 @@ class EducationService
         $this->ensureEducationCompletedFlag($user->id);
 
         return $education;
+    }
+
+    /**
+     * Zwraca paginowane edukacje dla użytkownika.
+     */
+    public function paginatedFor(User $user, int $perPage = 15): LengthAwarePaginator
+    {
+        if (property_exists($this, 'educationRepository') && $this->educationRepository) {
+            if (method_exists($this->educationRepository, 'paginatedFor')) {
+                return $this->educationRepository->paginatedFor($user->id, $perPage);
+            }
+            if (method_exists($this->educationRepository, 'getForUserOrderedByEndDatePaginated')) {
+                return $this->educationRepository->getForUserOrderedByEndDatePaginated($user->id, $perPage);
+            }
+        }
+
+        return Educations::where('user_id', $user->id)
+            ->orderByDesc('start_date')
+            ->orderByDesc('end_date')
+            ->orderByDesc('created_at')
+            ->paginate($perPage);
     }
 
     private function ensureEducationCompletedFlag(int $userId): void

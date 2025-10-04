@@ -39,7 +39,7 @@ export default function EmployeeTopNav() {
       label: 'Kariera',
       baseHref: '/employee/career',
       children: [
-        { label: 'Historia', href: '/employee/career' },
+        { label: 'Historia', href: '/employee/career/my-experiences' },
         { label: 'Dodaj', href: '/employee/career/add' },
       ],
     },

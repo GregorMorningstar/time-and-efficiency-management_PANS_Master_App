@@ -71,7 +71,27 @@ export default function CareerAddForm() {
     });
   }
 
+  // Add state for success and error messages
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
   return (
+
+    <>
+        <div className="mt-4">
+      {successMessage && (
+        <div className="mb-4 rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+          {successMessage}
+        </div>
+      )}
+      {errorMessage && (
+        <div className="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
+          {errorMessage}
+        </div>
+      )}
+
+      {/* ...existing JSX form/card... */}
+    </div>
     <form onSubmit={submit} className="space-y-5">
       <CareerNipInput onFill={onFillFromLookup} />
 
@@ -223,5 +243,7 @@ export default function CareerAddForm() {
         </button>
       </div>
     </form>
+
+    </>
   );
 }

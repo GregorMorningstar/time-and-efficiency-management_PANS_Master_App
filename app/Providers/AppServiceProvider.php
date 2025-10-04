@@ -5,6 +5,8 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use App\Repositories\EducationRepository;
 use App\Interfaces\EducationRepositoryInterface;
+use App\Repositories\ExperienceRepository;
+use App\Interfaces\ExperienceRepositoryInterface;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -17,6 +19,12 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(
             EducationRepositoryInterface::class,
            EducationRepository::class
+        );
+
+        // bind experience repo
+        $this->app->bind(
+            ExperienceRepositoryInterface::class,
+            ExperienceRepository::class
         );
     }
 

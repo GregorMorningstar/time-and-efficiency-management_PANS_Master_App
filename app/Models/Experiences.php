@@ -23,8 +23,18 @@ class Experiences extends Model
         'is_current',
         'barcode',
         'work_certificate_scan_path',
+        
 
     ];
+
+    /**
+     * Optional constructor - calls parent so developers can inject behavior later.
+     */
+    public function __construct(array $attributes = [])
+    {
+        parent::__construct($attributes);
+        // miejsce na przyszłą inicjalizację modelu
+    }
 
 
 

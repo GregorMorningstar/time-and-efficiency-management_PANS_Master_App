@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('company_name');
             $table->string('position');
                         $table->text('responsibilities')->nullable();
-            $table->integer('barcode')->nullable();
+            $table->string('barcode')->nullable();
             $table->string('street');
             $table->string('zip_code');
             $table->string('city');

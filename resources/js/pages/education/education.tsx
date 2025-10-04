@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Head, usePage } from '@inertiajs/react';
 import EmployeeLayout from '../employee/employee-layout';
+import Barcode from 'react-barcode';
 interface EducationItem {
   id: number;
   school: string;
@@ -8,6 +9,7 @@ interface EducationItem {
   end_year: string | number;
   level: string;
   diploma_path?: string | null;
+  barcode?: string | null;
 }
 
 interface PageProps extends Record<string, unknown> {
@@ -139,7 +141,7 @@ export default function EducationListPage() {
                   <button
                     type="button"
                     className="text-emerald-600 hover:underline dark:text-emerald-400 text-xs"
-                    onClick={() => setDiplomaPreview(e.diploma_path)}
+                    onClick={() => setDiplomaPreview(e.diploma_path ?? null)}
                   >
                     Dyplom
                   </button>
@@ -147,9 +149,20 @@ export default function EducationListPage() {
                   <span className="text-slate-400 italic text-xs">Brak dyplomu</span>
                 )}
               </div>
-              {/* Nazwa szkoły pogrubiona */}
-              <div className="flex-1 px-4 font-bold text-slate-800 dark:text-slate-100 text-base">
-                {e.school}
+              {/* Nazwa szkoły i barcode */}
+              <div className="flex-1 px-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex-shrink-0">
+                    {e.barcode ? (
+                      <div className="w-24">
+                        <Barcode value={e.barcode} height={36} width={1} fontSize={10} displayValue={false} />
+                      </div>
+                    ) : null}
+                  </div>
+                  <div className="font-bold text-slate-800 dark:text-slate-100 text-base">
+                    {e.school}
+                  </div>
+                </div>
               </div>
               {/* Ikony edycji i usuwania */}
               <div className="flex items-center gap-2 min-w-[70px] justify-end">

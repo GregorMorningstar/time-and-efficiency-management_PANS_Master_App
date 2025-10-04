@@ -58,6 +58,8 @@ class CheckEducationCareer
                 'employee.address.store',
                 'api.company.lookup',
                 'employee.career.add',
+                'employee.experiences',
+
 
 
             ];
