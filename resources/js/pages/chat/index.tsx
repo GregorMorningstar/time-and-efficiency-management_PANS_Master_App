@@ -31,7 +31,7 @@ const ChatPage: React.FC<ChatPageProps> = ({ user_id, other_user_id, users, chat
   const [messages, setMessages] = useState<ChatMessage[]>(chats || []);
   const [input, setInput] = useState('');
   const [echoStatus, setEchoStatus] = useState<string>('init');
-  const castConnector = () => (echo as any).connector?.pusher; 
+  const castConnector = () => (echo as any).connector?.pusher;
   // ref do auto-scroll na dół listy wiadomości
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const [search, setSearch] = useState('');
@@ -80,7 +80,8 @@ const ChatPage: React.FC<ChatPageProps> = ({ user_id, other_user_id, users, chat
       // monitoruj stan
       // Presence channel subskrypcja dla online status
       try {
-        presenceChannel = (echo as any).join('presence.chat')
+        // Presence channel for online status: use logical name 'chat' (Echo will prefix 'presence-')
+        presenceChannel = (echo as any).join('chat')
           .here((users: OnlineUserMeta[]) => {
             setOnlineIds(users.map(u => u.id));
           })
@@ -100,7 +101,7 @@ const ChatPage: React.FC<ChatPageProps> = ({ user_id, other_user_id, users, chat
           return () => {
             if (channel) channel.stopListening('MessageSent');
             if (channelName) echo.leaveChannel(channelName as string);
-            if (presenceChannel) (echo as any).leave('presence.chat');
+            if (presenceChannel) (echo as any).leave('chat');
             conn.unbind('state_change', handler);
           };
         }
@@ -108,11 +109,11 @@ const ChatPage: React.FC<ChatPageProps> = ({ user_id, other_user_id, users, chat
       return () => {
         if (channel) channel.stopListening('MessageSent');
         if (channelName) echo.leaveChannel(channelName as string);
-        if (presenceChannel) (echo as any).leave('presence.chat');
+  if (presenceChannel) (echo as any).leave('chat');
       };
     };
     boot();
-  return () => { cancelled = true; if (channel) channel.stopListening('MessageSent'); if (channelName) echo.leaveChannel(channelName as string); if (presenceChannel) (echo as any).leave('presence.chat'); };
+  return () => { cancelled = true; if (channel) channel.stopListening('MessageSent'); if (channelName) echo.leaveChannel(channelName as string); if (presenceChannel) (echo as any).leave('chat'); };
   }, [user_id]);
 
   const sendMessage = useCallback(async (e: React.FormEvent) => {
@@ -121,12 +122,14 @@ const ChatPage: React.FC<ChatPageProps> = ({ user_id, other_user_id, users, chat
     try {
       const csrf = (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content;
       if (!csrf) console.warn('Brak meta csrf-token w DOM');
+      const socketId = (window as any).Echo?.socketId?.() || '';
       const res = await fetch('/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'X-Requested-With': 'XMLHttpRequest',
-          'X-CSRF-TOKEN': csrf || ''
+          'X-CSRF-TOKEN': csrf || '',
+          'X-Socket-ID': socketId
         },
         credentials: 'same-origin',
         body: JSON.stringify({
@@ -167,7 +170,7 @@ const ChatPage: React.FC<ChatPageProps> = ({ user_id, other_user_id, users, chat
     <div className="container mx-auto shadow-lg rounded-lg">
       {/* header */}
       <div className="px-5 py-5 flex flex-wrap gap-4 items-center bg-white border-b-2">
-    
+
         {activeUser ? (
           <div className="text-sm text-blue-600">
             Aktualnie rozmawiasz z <span className="font-semibold">{activeUser.name}</span>
@@ -282,7 +285,7 @@ const ChatPage: React.FC<ChatPageProps> = ({ user_id, other_user_id, users, chat
             </div>
           </form>
         </div>
-       
+
       </div>
     </div>
 

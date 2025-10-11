@@ -12,7 +12,7 @@ class EducationRepository implements EducationRepositoryInterface
      * Create a new class instance.
      */
     public function __construct(
-        private readonly Educations $model, 
+        private readonly Educations $model,
     ) {}
 
     public function getAllEducationsByUserIdPaginated($userId, $perPage): LengthAwarePaginator
@@ -22,6 +22,22 @@ class EducationRepository implements EducationRepositoryInterface
     public function createEducation(array $data): Educations
     {
         return $this->model->create($data);
+    }
+  public function deleteEducationById(int $id): bool
+    {
+
+        dd(12323);
+        $education = Educations::find($id);
+        if (! $education) {
+            return false;
+        }
+
+        // optionally remove stored file if path column exists
+        if (! empty($education->diploma_path) && Storage::disk('local')->exists($education->diploma_path)) {
+            Storage::disk('local')->delete($education->diploma_path);
+        }
+
+        return (bool) $education->delete();
     }
 
 

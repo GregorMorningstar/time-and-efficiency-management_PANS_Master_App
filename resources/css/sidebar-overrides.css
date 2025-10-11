@@ -1,0 +1,14 @@
+/* adjust collapsed sidebar width (increase to 96px / 120px etc.) */
+.sidebar[data-collapsed="true"],
+.sidebar[aria-expanded="false"],
+.sidebar--collapsed,
+[data-sidebar-collapsed="true"] {
+  width: 120px !important;
+  min-width: 120px !important;
+}
+
+/* jeżeli wewnętrzny wrapper ma klasę, też wymuś */
+.sidebar .sidebar-inner,
+[data-sidebar] .sidebar-inner {
+  width: 100% !important;
+}

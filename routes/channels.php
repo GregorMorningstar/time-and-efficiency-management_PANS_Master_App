@@ -14,7 +14,7 @@ Broadcast::channel('chat.{id}', function ($user, $id) {
 
 // Kanał może być użyty zarówno dla nadawcy jak i odbiorcy (już powyżej). Dodatkowe reguły niepotrzebne.
 
-// Presence channel do statusów online w czacie
-Broadcast::channel('presence.chat', function ($user) {
+// Presence channel do statusów online w czacie (Echo.join('chat') => 'presence-chat')
+Broadcast::channel('presence-chat', function ($user) {
     return ['id' => $user->id, 'name' => $user->name];
 });

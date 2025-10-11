@@ -18,7 +18,6 @@ class EducationService
      */
     public function __construct(private readonly EducationRepositoryInterface $educationRepository)
     {
-        //
     }
 
 
@@ -92,11 +91,26 @@ class EducationService
     private function ensureEducationCompletedFlag(int $userId): void
     {
         $user = User::select(['id','education_completed'])->find($userId);
-        if (!$user || $user->education_completed) {
+        if (! $user) {
             return;
         }
-        if (Educations::where('user_id', $userId)->exists()) {
+
+        $hasAny = Educations::where('user_id', $userId)->exists();
+
+        if ($hasAny && ! $user->education_completed) {
             $user->forceFill(['education_completed' => true])->save();
+            return;
         }
+
+        if (! $hasAny && $user->education_completed) {
+            // jeśli nie ma już wpisów, ustaw flagę na false
+            $user->forceFill(['education_completed' => false])->save();
+            return;
+        }
+    }
+
+     public function deleteEducation(int $id): bool
+    {
+        return $this->educationRepository->deleteEducation($id);
     }
 }

@@ -3,11 +3,14 @@
 namespace App\Http\Controllers;
 
 use Inertia\Inertia;
-use App\Models\Educations;
 use Illuminate\Http\Request;
-use App\Enums\EducationsDegree;
-use App\Services\EducationService;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use App\Models\Educations;
+use App\Models\EducationsDegree;
+use App\Enums\EducationsDegree as EducationsDegreeEnum;
+use App\Services\EducationService;
 
 class EducationController extends Controller
 {
@@ -21,16 +24,41 @@ class EducationController extends Controller
     public function index()
     {
         $educations = $this->service->paginatedFor(request()->user(), 20);
+
+        // Prefer enum-backed options; provide labels for frontend
+        $educationLevels = EducationsDegreeEnum::selectOptions();
+
+        // If enum isn't available or returns empty, try the DB table as fallback
+        if (empty($educationLevels) && Schema::hasTable('education_degrees')) {
+            $educationLevels = DB::table('education_degrees')
+                ->orderBy('id')
+                ->get()
+                ->map(fn($r) => ['value' => $r->id, 'label' => $r->name])
+                ->toArray();
+        }
+
         return Inertia::render('education/education', [
             'educations'      => $educations,
-            'educationLevels' => EducationsDegree::selectOptions(),
+            'educationLevels' => $educationLevels,
         ]);
     }
 
     public function addEducation()
     {
+        // Prefer enum-backed options; fall back to DB table if enum not available.
+        $educationLevels = EducationsDegreeEnum::selectOptions();
+
+        // If enum isn't available or returns empty, try the DB table as fallback
+        if (empty($educationLevels) && Schema::hasTable('education_degrees')) {
+            $educationLevels = DB::table('education_degrees')
+                ->orderBy('id')
+                ->get()
+                ->map(fn($r) => ['value' => $r->id, 'label' => $r->name])
+                ->toArray();
+        }
+
         return Inertia::render('education/add-education', [
-            'educationDegrees' => EducationsDegree::selectOptions(),
+            'educationLevels' => $educationLevels,
         ]);
     }
 
@@ -57,4 +85,36 @@ class EducationController extends Controller
 
         return redirect()->route('employee.education')->with('success', 'Szkoła dodana.');
     }
+
+   public function destroy(Request $request)
+{
+
+    $user = Auth::user();
+    $id = (int) $request->input('id');
+dd($id);
+    if (! $id) {
+        return response()->json(['error' => 'Brak ID wpisu do usunięcia.'], 422);
+    }
+
+    $education = Educations::where('id', $id)->where('user_id', $user->id)->first();
+
+    if (! $education) {
+        return response()->json(['error' => 'Nie znaleziono wpisu lub brak uprawnień.'], 404);
+    }
+
+    try {
+        $education->delete();
+        $this->service->ensureEducationCompletedFlag($user->id);
+        return response()->json(['ok' => true]);
+    } catch (\Throwable $e) {
+        return response()->json(['error' => 'Błąd podczas usuwania wpisu.'], 500);
+    }
+}
+public function create()
+{
+    // use enum (aliased as EducationsDegreeEnum) to provide select options
+    return Inertia::render('education/add-education', [
+        'educationLevels' => EducationsDegreeEnum::selectOptions(),
+    ]);
+}
 }

@@ -15,7 +15,8 @@ return [
     |
     */
 
-    'default' => env('BROADCAST_CONNECTION', 'null'),
+    // Prefer BROADCAST_CONNECTION but also support the traditional BROADCAST_DRIVER env
+    'default' => env('BROADCAST_CONNECTION', env('BROADCAST_DRIVER', 'null')),
 
     /*
     |--------------------------------------------------------------------------

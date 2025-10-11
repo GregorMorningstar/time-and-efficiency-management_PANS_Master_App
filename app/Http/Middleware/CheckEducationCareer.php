@@ -47,21 +47,31 @@ class CheckEducationCareer
             ]);
 
             $allowedRoutes = [
-                'employee.dashboard',
-                'employee.education',
-                'employee.education.add',
-                'employee.education.store',
-                'employee.career',
-                'employee.career.store',
+
+                //api do wyszukiwania nip i firm
+                'api.company.lookup',
+
+                //adres
                 'employee.address',
                 'employee.address.add',
                 'employee.address.store',
-                'api.company.lookup',
+
+                //kariera
+                'employee.career',
                 'employee.career.add',
+                'employee.career.store',
+
+                //panel
+                'employee.dashboard',
+
+                //edukacja
+                'employee.education',
+                'employee.education.add',
+                'employee.education.delete',
+                'employee.education.store',
+
+                //doświadczenia
                 'employee.experiences',
-
-
-
             ];
 
             $currentName = $request->route()?->getName();

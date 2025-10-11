@@ -1,9 +1,9 @@
 import { NavMain } from '@/components/nav-main';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { Link, usePage } from '@inertiajs/react';
-import { MonitorCog, Folder, LayoutGrid, BookOpen, Factory, Calendar,MessagesSquare, BrainCog   } from 'lucide-react'; 
+import { MonitorCog, Folder, LayoutGrid, BookOpen, Factory, Calendar,MessagesSquare, BrainCog, LogOut   } from 'lucide-react';
 import AppLogo from './app-logo';
-import React, { Suspense } from 'react';
+import React, { Suspense, useEffect, useRef, useState } from 'react';
 const LazyBarcode = React.lazy(() => import('react-barcode'));
 export function AppSidebar() {
     interface User {
@@ -23,6 +23,25 @@ export function AppSidebar() {
 
     const { auth } = usePage<PageProps>().props;
     const user = auth?.user;
+
+    // detect collapsed state by observing wrapper width
+    const wrapperRef = useRef<HTMLDivElement | null>(null);
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+    useEffect(() => {
+        const el = wrapperRef.current;
+        if (!el) return;
+        const ro = new ResizeObserver(entries => {
+            for (const entry of entries) {
+                const w = entry.contentRect.width;
+                // when sidebar becomes narrow (icon-only) — adjust threshold if needed
+                setIsSidebarCollapsed(w < 96);
+            }
+        });
+        ro.observe(el);
+        // initial
+        setIsSidebarCollapsed(el.getBoundingClientRect().width < 96);
+        return () => ro.disconnect();
+    }, []);
 
     // Menu dla moderatora
     const moderatorNavItems = [
@@ -57,12 +76,12 @@ export function AppSidebar() {
     const adminNavItems = [
         {
             title: 'Dashboard',
-            href: 'admin/dashboard',
+            href: '/admin/dashboard',
             icon: LayoutGrid,
         },
         {
             title: 'Użytkownicy',
-            href: 'admin/users',
+            href: '/admin/users',
             icon: Folder,
         },
         {
@@ -70,7 +89,7 @@ export function AppSidebar() {
             href: '/admin/reports',
             icon: BookOpen,
         },
-          
+
     ];
 
     // Menu dla pracownika
@@ -92,96 +111,128 @@ export function AppSidebar() {
         user?.role === 'moderator'
             ? []
             : [
-                 {
-                    title: 'Chat',
-                    href: '/chat',
-                    icon: MessagesSquare ,
-                },
-                {
-                    title: 'Maszyny',
-                    href: '#',
-                    icon: BrainCog,
-                },
-                {
-                    title: 'Awarie',
-                    href: '#',
-                    icon: MonitorCog,
-                },
-               
-            ];
 
-    // Wybierz menu na podstawie roli
+                 {
+                     title: 'Chat',
+                     href: '/chat',
+                     icon: MessagesSquare ,
+                 },
+                 {
+                     title: 'Maszyny',
+                     href: '#',
+                     icon: BrainCog,
+                 },
+                 {
+                     title: 'Awarie',
+                     href: '#',
+                     icon: MonitorCog,
+                 },
+
+             ];
+
+    // menu na podstawie roli
     let mainNavItems = employeeNavItems;
     if (user?.role === 'moderator') mainNavItems = moderatorNavItems;
     else if (user?.role === 'admin') mainNavItems = adminNavItems;
 
-    // Dodaj wspólne menu na początek
+    // wspólne menu na początek
     mainNavItems = [...commonNavItems, ...mainNavItems];
 
     return (
-        <Sidebar collapsible="icon" variant="inset">
-            <SidebarFooter>
-                {user?.barcode && (
-                    <div className="w-full px-3 pt-3">
-                        <div className="w-full flex justify-center rounded bg-white/5 p-2" style={{ minHeight: '5vh' }}>
-                            <Suspense fallback={<div className="text-xs text-muted-foreground">Ładowanie…</div>}>
-                                <LazyBarcode
-                                    value={user.barcode}
-                                    displayValue={false}
-                                    height={50}
-                                    margin={0}
-                                    background="white"
-                                    lineColor="#fffblackfff"
-                                />
-                            </Suspense>
+<div
+  ref={wrapperRef}
+>
+            <Sidebar collapsible="icon" variant="inset" className="backdrop-blur bg-white/10 text-black ">
+                <SidebarFooter>
+                    {/* barcode shown only when sidebar is expanded */}
+                    {user?.barcode && !isSidebarCollapsed && (
+                        <div className="w-full px-3 pt-3">
+                            <div className="w-full flex justify-center rounded bg-white/5 p-2" style={{ minHeight: '5vh' }}>
+                                <Suspense fallback={<div className="text-xs text-muted-foreground">Ładowanie…</div>}>
+                                    <LazyBarcode
+                                        value={user.barcode}
+                                        displayValue={false}
+                                        height={50}
+                                        margin={0}
+                                        background="white"
+                                        lineColor="#000"
+                                    />
+                                </Suspense>
+                            </div>
+                            <div className="mt-1 text-center text-[11px] font-mono tracking-widest text-muted-foreground">
+                                {user.barcode}
+                            </div>
                         </div>
-                        <div className="mt-1 text-center text-[11px] font-mono tracking-widest text-muted-foreground">
-                            {user.barcode}
-                        </div>
-                    </div>
-                )}
-                <SidebarMenu>
-                    {user ? (
-                        <>
-                            <SidebarMenuItem>
-                                <SidebarMenuButton size="lg" disabled className="cursor-default !opacity-100 flex flex-col items-start">
-                                 
-                                    {user.role && <span className="text-xs text-muted-foreground">{user.role}</span>}
-                                </SidebarMenuButton>
-                            </SidebarMenuItem>
-                            <SidebarMenuItem>
-                                <SidebarMenuButton asChild>
-                                    <Link href={typeof route === 'function' ? (route as any)('logout') : '/logout'} method="post" as="button" className="text-left text-red-500 hover:text-red-600">
-                                        Wyloguj
-                                    </Link>
-                                </SidebarMenuButton>
-                            </SidebarMenuItem>
-                        </>
-                    ) : (
-                        <>
-                            <SidebarMenuItem>
-                                <SidebarMenuButton asChild>
-                                    <Link href={typeof route === 'function' ? (route as any)('login') : '/login'} className="text-left">
-                                        Zaloguj
-                                    </Link>
-                                </SidebarMenuButton>
-                            </SidebarMenuItem>
-                            <SidebarMenuItem>
-                                <SidebarMenuButton asChild>
-                                    <Link href={typeof route === 'function' ? (route as any)('register') : '/register'} className="text-left">
-                                        Rejestracja
-                                    </Link>
-                                </SidebarMenuButton>
-                            </SidebarMenuItem>
-                        </>
                     )}
-                </SidebarMenu>
-            </SidebarFooter>
-            <SidebarContent>
-                <NavMain items={mainNavItems} />
-            </SidebarContent>
 
-                     
-        </Sidebar>
-    );
-}
+                    <SidebarMenu
+                     className="
+    border-b
+    border-emerald-700
+    shadow-lg
+    shadow-emerald-500/40
+    transition-all
+    duration-500
+    hover:shadow-emerald-700/70
+    hover:border-emerald-500
+   mr-8
+  ">
+                        {user ? (
+                            <>
+                                <SidebarMenuItem>
+                                    <SidebarMenuButton size="lg" disabled className="cursor-default !opacity-100 flex flex-col items-start text-center gap-2">
+                                        {user.role && !isSidebarCollapsed && <span className="text-bold text-muted-foreground">{user.name}</span>}
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+
+                                {/* Wyloguj - czerwony przycisk; pokazuje "W" gdy sidebar jest zminimalizowany */}
+                                <SidebarMenuItem>
+                                    <SidebarMenuButton asChild>
+                                        <Link href="/logout" method="post" className="text-left text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 flex items-center gap-2">
+                                            <LogOut />
+                                            {!isSidebarCollapsed && <span>Wyloguj</span>}
+                                        </Link>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                            </>
+                        ) : (
+                            <>
+                                <SidebarMenuItem>
+                                    <SidebarMenuButton asChild>
+                                        <Link href={typeof route === 'function' ? (route as any)('login') : '/login'} className="text-left">
+                                            Zaloguj
+                                        </Link>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                                <SidebarMenuItem>
+                                    <SidebarMenuButton asChild>
+                                        <Link href={typeof route === 'function' ? (route as any)('register') : '/register'} className="text-left">
+                                            Rejestracja
+                                        </Link>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                            </>
+                        )}
+                    </SidebarMenu>
+                </SidebarFooter>
+
+                <SidebarContent
+                    className="
+    border-b
+    border-emerald-700
+    shadow-lg
+    shadow-emerald-500/40
+    transition-all
+    duration-500
+    hover:shadow-emerald-700/70
+    hover:border-emerald-500
+
+  "
+                >
+                        <NavMain items={mainNavItems} className="backdrop-blur bg-white/10 text-black back-ground-gray-400"/>
+
+                </SidebarContent>
+            </Sidebar>
+        </div>
+     );
+ }

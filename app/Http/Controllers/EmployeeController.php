@@ -15,7 +15,7 @@ class EmployeeController extends Controller
     public function addEducation()
     {
         return Inertia::render('employee/add-education', [
-            'educationDegrees' => EducationsDegree::selectOptions(),
+            'educationLevels' => EducationsDegree::selectOptions(),
         ]);
     }
 

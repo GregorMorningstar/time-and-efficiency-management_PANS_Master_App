@@ -7,8 +7,8 @@ interface PageProps { [key: string]: any }
 const baseItems: NavItem[] = [
   { label: 'Dashboard', href: '/dashboard' },
   { label: 'Chat', href: '/chat' },
-  { label: 'Użytkownicy', href: '/admin/users' },
-  { label: 'Raporty', href: '/admin/reports' },
+  { label: 'Użytkownicy', href: '/users' },
+  { label: 'Raporty', href: '/reports' },
 ];
 
 export default function AdminTopNav() {

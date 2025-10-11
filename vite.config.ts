@@ -18,7 +18,12 @@ export default defineConfig({
             input: ['resources/js/app.tsx'],
             refresh: true,
         }),
-        react(),
+        react({
+            // Exclude the hook file from React Refresh to avoid $RefreshSig$ instrumentation
+            exclude: [
+                /resources\/js\/hooks\/use-appearance\.tsx$/
+            ]
+        }),
         tailwindcss(),
     ],
     esbuild: {
