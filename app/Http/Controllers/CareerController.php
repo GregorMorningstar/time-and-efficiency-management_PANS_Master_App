@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Services\NipService;
 use App\Services\ExperienceService;
+use App\Services\FlagsService;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -15,13 +16,17 @@ class CareerController extends Controller
 {
     public function __construct(
         private readonly NipService $nipService,
-        private readonly ExperienceService $experienceService // dodaj jeśli jeszcze nie ma
+        private readonly ExperienceService $experienceService,
+        private readonly FlagsService $flagsService
     ) {}
 
 
     public function index()
     {
-        return Inertia::render('career/index');
+        $userCareer = $this->experienceService->getForAuthUser(request()->user(), 15);
+        return Inertia::render('career/index', [
+            'experiences' => $userCareer
+        ]);
     }
 
 
@@ -90,12 +95,14 @@ class CareerController extends Controller
 
         try {
             $experience = Experiences::create($validated);
-            if($experience) {
+            if ($experience) {
+                // synchronizuj flagę i pobierz liczbę wpisów (przekaż user id)
+                $count = $this->flagsService->syncUserExperienceFlag($request->user()->id ?? null);
 
-        if (! $request->user()->experience_completed) {
-            $request->user()->forceFill(['experience_completed' => true])->save();
-        }
-}
+                if (! $request->user()->experience_completed) {
+                    $request->user()->forceFill(['experience_completed' => true])->save();
+                }
+            }
             return redirect()->route('employee.career')->with('success', 'Przebieg kariery został dodany.');
         } catch (\Throwable $e) {
             Log::error('Experience create failed', ['err' => $e->getMessage()]);
@@ -124,7 +131,8 @@ class CareerController extends Controller
     {
         $perPage = 15;
         $user = request()->user();
-        $experiences = $this->experienceService->getCurrentUserExperiencesPaginated($user, $perPage);
+        // use existing service method
+        $experiences = $this->experienceService->getForAuthUser($user, $perPage);
         return Inertia::render('career/experienceListCurrentUser', [
             'experiences' => $experiences,
         ]);

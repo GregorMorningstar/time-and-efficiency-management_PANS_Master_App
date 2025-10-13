@@ -11,14 +11,17 @@ use App\Models\Educations;
 use App\Models\EducationsDegree;
 use App\Enums\EducationsDegree as EducationsDegreeEnum;
 use App\Services\EducationService;
+use App\Services\FlagsService;
 
 class EducationController extends Controller
 {
     protected $service;
+    protected $flagsService;
 
-    public function __construct(EducationService $service)
+    public function __construct(EducationService $service, FlagsService $flagsService)
     {
         $this->service = $service;
+        $this->flagsService = $flagsService;
     }
 
     public function index()
@@ -83,7 +86,7 @@ class EducationController extends Controller
             $request->user()->forceFill(['education_completed' => true])->save();
         }
 
-        return redirect()->route('employee.education')->with('success', 'Szkoła dodana.');
+        return redirect()->back()->with('success', 'Szkoła dodana.');
     }
 
    public function destroy(Request $request)
@@ -91,7 +94,6 @@ class EducationController extends Controller
 
     $user = Auth::user();
     $id = (int) $request->input('id');
-dd($id);
     if (! $id) {
         return response()->json(['error' => 'Brak ID wpisu do usunięcia.'], 422);
     }
@@ -104,10 +106,10 @@ dd($id);
 
     try {
         $education->delete();
-        $this->service->ensureEducationCompletedFlag($user->id);
-        return response()->json(['ok' => true]);
+    $flagsEducationCount = $this->flagsService->syncUserEducationFlag();
+        return redirect()->route('employee.education')->with('success', 'Szkoła zostala usunieta.');
     } catch (\Throwable $e) {
-        return response()->json(['error' => 'Błąd podczas usuwania wpisu.'], 500);
+        return response()->json(['error' => 'Błąd podczas usuwania wpisu.' . $e->getMessage()], 500);
     }
 }
 public function create()

@@ -7,7 +7,8 @@ use App\Repositories\EducationRepository;
 use App\Interfaces\EducationRepositoryInterface;
 use App\Repositories\ExperienceRepository;
 use App\Interfaces\ExperienceRepositoryInterface;
-
+use App\Repositories\FlagsRepository;
+use App\Interfaces\FlagsRepositoryInterface;
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -25,6 +26,12 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(
             ExperienceRepositoryInterface::class,
             ExperienceRepository::class
+        );
+
+        //flags
+        $this->app->bind(
+           FlagsRepositoryInterface::class,
+            FlagsRepository::class
         );
     }
 

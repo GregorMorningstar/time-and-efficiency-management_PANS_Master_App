@@ -15,7 +15,7 @@ class ExperienceRepository implements ExperienceRepositoryInterface
         return $this->model->create($data);
     }
 
-    public function getForUserOrderedByEndDatePaginated(int $userId, int $perPage = 15): LengthAwarePaginator
+    public function getForAuthUser(int $userId, int $perPage = 15): LengthAwarePaginator
     {
         return $this->model
             ->where('user_id', $userId)

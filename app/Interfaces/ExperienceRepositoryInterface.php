@@ -8,7 +8,7 @@ interface ExperienceRepositoryInterface
 {
 
     public function create(array $data);
-    public function getForUserOrderedByEndDatePaginated(int $userId, int $perPage = 15): LengthAwarePaginator;
+    public function getForAuthUser(int $userId, int $perPage = 15): LengthAwarePaginator;
 
 
 }

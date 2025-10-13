@@ -13,7 +13,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 
 class ExperienceService
 {
-    public function __construct(private readonly ExperienceRepositoryInterface $repo) {}
+    public function __construct(private readonly ExperienceRepositoryInterface $repo, private readonly FlagsService $flagsService) {}
 
     /**
      *
@@ -43,22 +43,15 @@ class ExperienceService
         }
 
         $data['user_id'] = $user->id;
+        $experience = $this->repo->create($data);
+        $flagsExperienceCount = $this->flagsService->syncUserExperienceFlag();
+        return $experience;
 
-        return $this->repo->create($data);
     }
 
-    public function getCurrentUserExperiencesPaginated(User $user, int $perPage = 15): LengthAwarePaginator
+    public function getForAuthUser(User $user, int $perPage = 15): LengthAwarePaginator
     {
-        // jeśli masz repo z paginacją, użyj go:
-        if (method_exists($this->repo, 'getForUserOrderedByEndDatePaginated')) {
-            return $this->repo->getForUserOrderedByEndDatePaginated($user->id, $perPage);
-        }
+        return $this->repo->getForAuthUser($user->id, $perPage);
 
-        // fallback bez repo:
-        return Experiences::where('user_id', $user->id)
-            ->orderByDesc('is_current')   // obecne na górze
-            ->orderByDesc('end_date')     // potem po dacie zakończenia malejąco
-            ->orderByDesc('created_at')
-            ->paginate($perPage);
     }
 }
