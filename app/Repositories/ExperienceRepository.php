@@ -22,5 +22,18 @@ class ExperienceRepository implements ExperienceRepositoryInterface
             ->orderByDesc('end_date')
             ->paginate($perPage);
     }
+    public function delete(int $id): bool
+    {
+        $experience = $this->model->find($id);
+        if ($experience) {
+            return $experience->delete();
+        }
+        return false;
+    }
+    public function findById(int $id)
+    {
+        return $this->model->find($id);
+    }
+    
 
 }

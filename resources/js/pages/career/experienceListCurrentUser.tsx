@@ -45,7 +45,7 @@ export default function ExperienceListCurrentUserPage({ experiences }: { experie
           <div className="text-sm text-slate-600">Brak wpisów przebiegu kariery.</div>
         )}
       </div>
-
+{}
       {/* grid: max 3 karty w rzędzie */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {paged.map((experience: ExperienceItem) => (
@@ -54,6 +54,8 @@ export default function ExperienceListCurrentUserPage({ experiences }: { experie
             experience={{
               ...experience,
               company_name: experience.company_name ?? experience.company ?? 'Nieznana firma',
+              detailsHref: `/career/experience/${experience.id}`,
+              editHref: `/career/experience/${experience.id}/edit`,
             }}
           />
         ))}

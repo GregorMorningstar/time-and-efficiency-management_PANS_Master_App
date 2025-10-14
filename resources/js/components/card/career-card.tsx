@@ -3,6 +3,8 @@ import Barcode from 'react-barcode';
 import React, { useState } from 'react';
 
 interface ExperienceItem {
+    detailsHref: any;
+    editHref: any;
   id: number;
   position: string;
   company_name: string;
@@ -11,6 +13,9 @@ interface ExperienceItem {
   is_current: boolean;
   description?: string | null;
   work_certificate_scan_path?: string | null;
+    street?: string | null;
+    city?: string | null;
+    zip_code?: string | null;
   barcode?: string | null;
     nip?: string | null;
   actions?: {
@@ -44,6 +49,10 @@ export default function CareerCard({ experience }: CareerCardProps) {
 
   const employmentRange = `${experience.start_date} — ${experience.is_current ? 'W trakcie' : (experience.end_date ?? '—')}`;
 
+    function onDelete(event: React.MouseEvent<HTMLButtonElement>): void {
+        throw new Error('Function not implemented.');
+    }
+
   return (
     <>
       <div className="relative flex flex-col my-6 bg-white shadow-sm border border-slate-200 rounded-lg w-96">
@@ -75,10 +84,27 @@ export default function CareerCard({ experience }: CareerCardProps) {
             <h5 className="mb-2 text-slate-800 text-lg font-semibold">
               {experience.company_name}
             </h5>
-
-            <hr className="my-2" />
-
-            <h6 className="mb-2 text-slate-600 text-md font-medium"> Stanowisko</h6>
+            <div className="text-sm text-slate-600">
+              <div className="mb-2 text-slate-600 text-md font-medium">Adres</div>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-3 text-sm">
+                <div className="flex-1 min-w-0">
+                  <span className="font-medium text-slate-700 mr-2">Ulica:</span>
+                  <span className="text-slate-600 truncate"> {experience.street ?? '—'}</span>
+                </div>
+                <div className="flex-shrink-0 text-right sm:text-left">
+                  <div className="text-slate-600">
+                    <span className="font-medium text-slate-700 mr-1">Kod:</span>
+                    <span className="font-mono">{experience.zip_code ?? '—'}</span>
+                  </div>
+                  <div className="text-slate-600">
+                    <span className="font-medium text-slate-700 mr-1">Miasto:</span>
+                    <span className="truncate">{experience.city ?? '—'}</span>
+                  </div>
+                </div>
+              </div>
+              <hr className="my-2" />
+            </div>
+            <h6 className="mb-2 text-slate-600 text-md font-medium">Stanowisko</h6>
             <p className="text-slate-600 leading-normal font-light mb-2">
               {experience.position}
             </p>
@@ -132,6 +158,7 @@ export default function CareerCard({ experience }: CareerCardProps) {
               Usuń
             </button>
           </div>
+        
         </div>
       </div>
 

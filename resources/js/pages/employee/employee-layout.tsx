@@ -1,4 +1,4 @@
-import React, { ReactNode, useEffect } from 'react';
+import React, { ReactNode, useEffect, useState, useRef } from 'react';
 import { Head, usePage } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import EmployeeTopNav from '@/components/app-sidebar-employee';
@@ -33,6 +33,29 @@ export default function EmployeeLayout({
   const mapped = breadcrumbs.map(b => ({ title: b.label, href: b.href ?? '' }));
   const { flash } = usePage<PageProps>().props;
 
+  // local flash state that will auto-hide after 5s
+  const [localFlash, setLocalFlash] = useState<{ success?: ReactNode; error?: ReactNode }>({});
+  const timersRef = useRef<number[]>([]);
+
+  useEffect(() => {
+    if (flash?.success || flash?.error) {
+      setLocalFlash({ success: flash?.success, error: flash?.error });
+      // clear any previous timers and schedule hide
+      timersRef.current.forEach(t => clearTimeout(t));
+      timersRef.current = [];
+      const id = window.setTimeout(() => setLocalFlash({}), 5000);
+      timersRef.current.push(id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [flash?.success, flash?.error]);
+
+  useEffect(() => {
+    return () => {
+      timersRef.current.forEach(t => clearTimeout(t));
+      timersRef.current = [];
+    };
+  }, []);
+
   useEffect(() => {
     if (flash?.success) console.log('[FLASH:success]', flash.success);
     if (flash?.error) console.warn('[FLASH:error]', flash.error);
@@ -52,15 +75,15 @@ export default function EmployeeLayout({
         <main className="flex-1">
           <h1 className="text-xl font-semibold mb-4">{title}</h1>
 
-          {/* Baner flash zamiast window.alertMessage */}
-          {flash?.success && (
+          {/* Baner flash zamiast window.alertMessage — ukrywa się po 5s */}
+          {localFlash?.success && (
             <div className="mb-4 rounded-md border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm text-emerald-800 dark:border-emerald-600/40 dark:bg-emerald-900/20 dark:text-emerald-200">
-              {flash.success}
+              {localFlash.success}
             </div>
           )}
-          {flash?.error && (
+          {localFlash?.error && (
             <div className="mb-4 rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-600/40 dark:bg-red-900/20 dark:text-red-300">
-              {flash.error}
+              {localFlash.error}
             </div>
           )}
           {flash?.alertMessage && (

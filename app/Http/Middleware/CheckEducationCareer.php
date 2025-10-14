@@ -60,6 +60,9 @@ class CheckEducationCareer
                 'employee.career',
                 'employee.career.add',
                 'employee.career.store',
+                'employee.career.delete',
+                'employee.career.edit',
+                'employee.career.update',
 
                 //panel
                 'employee.dashboard',
@@ -69,6 +72,9 @@ class CheckEducationCareer
                 'employee.education.add',
                 'employee.education.delete',
                 'employee.education.store',
+                'employee.education.edit',
+                'employee.education.update',
+                
 
                 //doświadczenia
                 'employee.experiences',

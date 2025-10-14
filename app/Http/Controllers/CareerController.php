@@ -37,9 +37,11 @@ class CareerController extends Controller
 
     public function store(Request $request)
     {
-        Log::info('Career.store payload', [
-            'data' => $request->except('work_certificate_scan'),
-            'has_file' => $request->hasFile('work_certificate_scan'),
+        Log::info('Career.store: incoming request', [
+            'raw'       => $request->except('work_certificate_scan'),
+            'has_file'  => $request->hasFile('work_certificate_scan'),
+            'user_id'   => $request->user()?->id,
+            'route'     => $request->route()?->getName(),
         ]);
 
         $validated = $request->validate([
@@ -56,10 +58,12 @@ class CareerController extends Controller
             'work_certificate_scan' => 'nullable|file|mimes:pdf,jpeg,png|max:10240',
         ]);
 
-        // jeśli podano NIP, spróbuj uzupełnić dane firmy przez NipService
+        Log::info('Career.store: validated data', $validated);
+
         if (!empty($validated['nip'])) {
             try {
                 $company = $this->nipService->fetchByNip((string)$validated['nip']);
+                Log::info('Career.store: NIP lookup success', ['nip' => $validated['nip'], 'company' => $company]);
                 if (!empty($company['name'])) {
                     $validated['company_name'] = $company['name'];
                 }
@@ -73,12 +77,10 @@ class CareerController extends Controller
                     $validated['city'] = $company['city'];
                 }
             } catch (\Throwable $e) {
-                Log::warning('NIP lookup failed', ['nip' => $validated['nip'], 'err' => $e->getMessage()]);
-                // nie przerywamy zapisu; zapisujemy ręcznie wprowadzane pola
+                Log::warning('Career.store: NIP lookup failed', ['nip' => $validated['nip'], 'err' => $e->getMessage()]);
             }
         }
 
-        // obsługa pliku: zapis do storage/app/public/image/employment_certificate
         if ($request->hasFile('work_certificate_scan')) {
             try {
                 $file = $request->file('work_certificate_scan');
@@ -87,17 +89,18 @@ class CareerController extends Controller
                 $path = $file->storeAs('image/employment_certificate', $fileName, 'public');
                 $validated['work_certificate_scan_path'] = $path;
             } catch (\Throwable $e) {
-                Log::error('Failed to store work_certificate_scan', ['err' => $e->getMessage()]);
+                Log::error('Career.store: file store failed', ['err' => $e->getMessage()]);
             }
         }
 
         $validated['user_id'] = auth()->id();
 
         try {
+            Log::info('Career.store: final payload to create', $validated);
             $experience = Experiences::create($validated);
             if ($experience) {
-                // synchronizuj flagę i pobierz liczbę wpisów (przekaż user id)
                 $count = $this->flagsService->syncUserExperienceFlag($request->user()->id ?? null);
+                Log::info('Career.store: created experience + sync flags', ['experience_id' => $experience->id, 'flags_experience_count' => $count]);
 
                 if (! $request->user()->experience_completed) {
                     $request->user()->forceFill(['experience_completed' => true])->save();
@@ -105,7 +108,7 @@ class CareerController extends Controller
             }
             return redirect()->route('employee.career')->with('success', 'Przebieg kariery został dodany.');
         } catch (\Throwable $e) {
-            Log::error('Experience create failed', ['err' => $e->getMessage()]);
+            Log::error('Career.store: exception', ['err' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
             return back()->with('error', 'Błąd zapisu rekordu: ' . $e->getMessage());
         }
     }
@@ -126,15 +129,112 @@ class CareerController extends Controller
 
     }
 
-    //current user's experiences paginated
     public function listExperiences()
     {
         $perPage = 15;
         $user = request()->user();
-        // use existing service method
         $experiences = $this->experienceService->getForAuthUser($user, $perPage);
         return Inertia::render('career/experienceListCurrentUser', [
             'experiences' => $experiences,
         ]);
+    }
+
+    public function destroy(Request $request)
+    {
+
+        try {
+
+
+            $deleted = $this->experienceService->deleteExperience($request->input('id'));
+            if ($deleted) {
+                return redirect()->route('employee.career')->with('success', 'Rekord został usunięty.');
+            } else {
+                return response()->json(['error' => 'Nie znaleziono rekordu lub brak uprawnień.'], 404);
+            }
+        } catch (\Throwable $e) {
+            Log::error('Experience delete failed', ['err' => $e->getMessage()]);
+            return response()->json(['error' => 'Błąd usuwania rekordu: ' . $e->getMessage()], 500);
+        }
+
+    }
+
+    public function edit($id)
+    {
+        $user = request()->user();
+        $experience = $this->experienceService->findByIdForUser((int)$id, $user);
+        if (! $experience) {
+            return redirect()->route('employee.career')->with('error', 'Rekord nie istnieje lub brak uprawnień.');
+        }
+        return Inertia::render('career/edit', [
+            'experience' => $experience,
+        ]);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $user = $request->user();
+        Log::info('Career.update: incoming', [
+            'id'      => $id,
+            'raw'     => $request->except('work_certificate_scan'),
+            'hasFile' => $request->hasFile('work_certificate_scan'),
+            'user_id' => $user?->id,
+            'method'  => $request->method(),
+            'content_type' => $request->header('Content-Type'),
+            'query'   => $request->query(),
+        ]);
+
+        $validated = $request->validate([
+            'company_name' => 'nullable|string|max:255',
+            'position' => 'required|string|max:255',
+            'start_date' => 'required|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+            'street' => 'nullable|string|max:255',
+            'zip_code' => 'nullable|string|max:10',
+            'city' => 'nullable|string|max:100',
+            'nip' => 'nullable|string|max:20',
+            'is_current' => 'sometimes|boolean',
+            'responsibilities' => 'nullable|string',
+            'barcode' => 'nullable|string|max:50',
+            'work_certificate_scan' => 'nullable|file|mimes:pdf,jpeg,png|max:10240',
+        ]);
+
+        // If NIP changed (or provided) attempt refresh of company data
+        Log::info('Career.update: validated', $validated);
+
+        if (!empty($validated['nip'])) {
+            try {
+                $company = $this->nipService->fetchByNip((string)$validated['nip']);
+                Log::info('Career.update: NIP lookup success', ['nip' => $validated['nip'], 'company' => $company]);
+                if (!empty($company['name'])) {
+                    $validated['company_name'] = $company['name'];
+                }
+                if (!empty($company['street'])) {
+                    $validated['street'] = $company['street'];
+                }
+                if (!empty($company['zip'])) {
+                    $validated['zip_code'] = $company['zip'];
+                }
+                if (!empty($company['city'])) {
+                    $validated['city'] = $company['city'];
+                }
+            } catch (\Throwable $e) {
+                Log::warning('Career.update: NIP lookup failed', ['nip' => $validated['nip'] ?? null, 'err' => $e->getMessage()]);
+            }
+        }
+
+        $file = $request->hasFile('work_certificate_scan') ? $request->file('work_certificate_scan') : null;
+
+        try {
+            Log::info('Career.update: pre-update payload', ['id' => $id, 'payload' => $validated]);
+            $experience = $this->experienceService->updateExperience($user, (int)$id, $validated, $file);
+            if (! $experience) {
+                return redirect()->route('employee.career')->with('error', 'Nie znaleziono rekordu lub brak uprawnień.');
+            }
+            Log::info('Career.update: update success', ['id' => $experience->id]);
+            return redirect()->route('employee.career')->with('success', 'Przebieg kariery został zaktualizowany.');
+        } catch (\Throwable $e) {
+            Log::error('Career.update: exception', ['id' => $id, 'err' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            return back()->with('error', 'Błąd aktualizacji rekordu: '.$e->getMessage());
+        }
     }
 }
