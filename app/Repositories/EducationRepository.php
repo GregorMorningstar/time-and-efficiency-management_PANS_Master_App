@@ -26,7 +26,7 @@ class EducationRepository implements EducationRepositoryInterface
   public function deleteEducationById(int $id): bool
     {
 
-        dd(12323);
+       // dd(12323);
         $education = Educations::find($id);
         if (! $education) {
             return false;
@@ -39,6 +39,9 @@ class EducationRepository implements EducationRepositoryInterface
 
         return (bool) $education->delete();
     }
-
+    public function getEducationById(int $id): ?Educations
+    {
+        return $this->model->find($id);
+    }
 
 }

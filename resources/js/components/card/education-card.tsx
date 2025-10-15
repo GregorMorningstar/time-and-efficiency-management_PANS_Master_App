@@ -40,6 +40,7 @@ export default function EducationCard({
   diplomaUrl,
   createdAt,
   actions,
+
   onDelete,
   compact = false,
 }: EducationCardProps) {

@@ -10,4 +10,5 @@ interface EducationRepositoryInterface
     public function getAllEducationsByUserIdPaginated(int $userId, int $perPage): LengthAwarePaginator;
     public function createEducation(array $data): Educations;
     public function deleteEducationById(int $id): bool;
+    public function getEducationById(int $id): ?Educations;
 }

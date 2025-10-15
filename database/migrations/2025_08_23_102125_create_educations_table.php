@@ -47,7 +47,7 @@ return new class extends Migration
             $table->boolean('is_current')->default(false);
             // Ścieżka do pliku (zmienione z diploma_scan_path)
             $table->string('diploma_path')->nullable();
-
+            $table->boolean('verified')->default(false);
             // RODO
             $table->boolean('rodo_accepted')->default(false);
             $table->timestamp('rodo_accepted_at')->nullable();

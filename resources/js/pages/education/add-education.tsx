@@ -1,7 +1,7 @@
 import React from 'react';
 import { Head, useForm, usePage } from '@inertiajs/react';
 import EmployeeLayout from '../employee/employee-layout';
-import EducationAddSchoolCard from '@/components/card/education-add-school-card';
+import EducationAddSchoolCard from '@/components/card/education-edit-card';
 
 type LevelOption = { value: string; label: string };
 

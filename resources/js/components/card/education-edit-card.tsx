@@ -1,34 +1,93 @@
 import React, { useRef, useState } from 'react';
-import { useForm } from '@inertiajs/react';
+import { useForm, router } from '@inertiajs/react';
 
 interface LevelOption { value: string; label: string }
 
 interface Props {
 	levels: LevelOption[];
 	storeRoute?: string; // default: employee.education.store
+	storeParams?: Record<string, any>;
+	methodOverride?: string | null; // e.g. 'PUT' for edit
+	initialValues?: Partial<{
+		school: string;
+		address: string;
+		city: string;
+		start_date: string;
+		end_date: string;
+		start_year: string;
+		end_year: string;
+		zip_code: string;
+		level: string;
+		diploma_path?: string | null;
+		user_id?: string | number;
+		is_current?: boolean;
+	}>;
 	afterSubmit?: () => void;
 	userId?: number | string; // (opcjonalnie) przekaż jeśli chcesz wysłać user_id
 }
 
-export default function EducationAddSchoolCard({ levels, storeRoute = 'employee.education.store', afterSubmit, userId }: Props) {
+export default function EducationEditCard({ levels, storeRoute = 'employee.education.store', storeParams, methodOverride = null, initialValues = undefined, afterSubmit, userId }: Props) {
 	const fileRef = useRef<HTMLInputElement | null>(null);
 	const [preview, setPreview] = useState<string | null>(null);
 
-	const { data, setData, post, processing, errors, reset, progress } = useForm({
-    school: '',
-    address: '',
-    city: '',
-    start_date: '',
-    end_date: '',
-    start_year: '',
-    end_year: '',
-    zip_code: '',
-    level: levels[0]?.value || '',
-    diploma: null as File | null,
-    user_id: userId ?? '',
-    rodo_accept: false,
-    is_current: false, 
-	});
+	// helper to normalize various date formats to YYYY-MM-DD for <input type=date>
+	function normalizeDateString(s?: string | null) {
+		if (!s) return '';
+		const str = String(s).trim();
+		// already yyyy-mm-dd or starts with it
+		const isoMatch = str.match(/^(\d{4}-\d{2}-\d{2})/);
+		if (isoMatch) return isoMatch[1];
+		// dd.mm.yyyy
+		const dotMatch = str.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})/);
+		if (dotMatch) {
+			const d = dotMatch[1].padStart(2, '0');
+			const m = dotMatch[2].padStart(2, '0');
+			const y = dotMatch[3];
+			return `${y}-${m}-${d}`;
+		}
+		// try Date parse fallback
+		const parsed = new Date(str);
+		if (!isNaN(parsed.getTime())) return parsed.toISOString().slice(0,10);
+		return '';
+	}
+
+	const normalizedInitial = initialValues ? {
+		...initialValues,
+		start_date: normalizeDateString((initialValues as any).start_date),
+		end_date: normalizeDateString((initialValues as any).end_date),
+		is_current: Boolean((initialValues as any).is_current),
+		// when editing, assume RODO was previously accepted
+		rodo_accept: true,
+	} : undefined;
+
+	const initial = {
+		school: '',
+		address: '',
+		city: '',
+		start_date: '',
+		end_date: '',
+		start_year: '',
+		end_year: '',
+		zip_code: '',
+		level: levels[0]?.value || '',
+		diploma: null as File | null,
+		user_id: userId ?? '',
+		rodo_accept: false,
+		is_current: false,
+		_method: undefined as string | undefined,
+		diploma_path: undefined as string | undefined,
+		...(normalizedInitial || {}),
+	};
+
+	const { data, setData, post, processing, errors, reset, progress } = useForm(initial);
+
+	// if initialValues contained diploma_path, set preview
+	React.useEffect(() => {
+		if (initialValues?.diploma_path) {
+			const url = initialValues.diploma_path.startsWith('/') ? initialValues.diploma_path : '/' + initialValues.diploma_path;
+			setPreview(url);
+		}
+	}, [initialValues]);
 
 	const [clientErrors, setClientErrors] = useState<Record<string,string>>({});
 
@@ -63,7 +122,7 @@ export default function EducationAddSchoolCard({ levels, storeRoute = 'employee.
 
 	function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
 		const f = e.target.files?.[0];
-		setData('diploma', f || null);
+		setData('diploma', (f as any) || null);
 		if (f) {
 			const url = URL.createObjectURL(f);
 			setPreview(p => { if (p) URL.revokeObjectURL(p); return url; });
@@ -96,27 +155,55 @@ export default function EducationAddSchoolCard({ levels, storeRoute = 'employee.
 		// Uzupełnij pola zależne
 		if (data.start_date) setData('start_year', data.start_date.substring(0,4));
 		if (data.end_date && !data.is_current) setData('end_year', data.end_date.substring(0,4));
-		if (data.is_current) setData('end_date', ''); // <--- WYCZYŚĆ DATĘ ZAKOŃCZENIA JEŚLI W TRAKCIE
+		if (data.is_current) {
+			// send explicit null for end_date so backend stores NULL
+			setData('end_date', null as any);
+			setData('end_year', null as any);
+		}
 
 		if (!data.user_id && userId) setData('user_id', String(userId));
 
-		post((typeof route === 'function') ? route(storeRoute) : '/employee/education', {
-			forceFormData: true,
-			onSuccess: () => {
-				reset();
-				setPreview(null);
-				setClientErrors({});
-				afterSubmit?.();
-			},
-			onError: () => {
-				// błędy backendu już są w errors
-			},
-			onFinish: () => {
-				if (window.location.search.includes('debug=1')) {
-					console.log('[EDU:FORM_SENT]', data);
-				}
+		// If editing, set method override field so backend will treat as PUT
+		if (methodOverride) {
+			setData('_method', methodOverride);
+		}
+
+		const target = (typeof route === 'function') ? route(storeRoute, storeParams || {}) : '/employee/education';
+
+		// Build FormData manually so we can guarantee _method is included as 'PUT' when editing
+		const fd = new FormData();
+		// append all fields from form data
+		Object.entries(data).forEach(([k, v]) => {
+			if (v === undefined) return;
+			if (v === null) {
+				// append empty string for nulls except we will set end_date explicitly below
+				fd.append(k, '');
+				return;
 			}
+			// handle file object
+			if (k === 'diploma' && v && (v as any) instanceof File) {
+				fd.append('diploma', v as any);
+				return;
+			}
+			fd.append(k, String(v));
 		});
+		// prefer header-based override to ensure Laravel recognizes the intended method
+		// ensure end_date is explicitly null/absent when is_current
+		if (data.is_current) {
+			// remove any existing end_date/end_year and set as empty for middleware to nullify, or backend normalization handles boolean + nulls
+			fd.set('end_date', '');
+			fd.set('end_year', '');
+		}
+
+		const routerOptions: any = {
+			preserveState: true,
+		};
+		if (methodOverride) {
+			routerOptions.headers = { 'X-HTTP-Method-Override': methodOverride };
+		}
+
+		router.post(target, fd, routerOptions);
+		// note: success/error handling is handled via Inertia visit callbacks if needed
 	}
 
 		return (
@@ -126,7 +213,7 @@ export default function EducationAddSchoolCard({ levels, storeRoute = 'employee.
 					className="relative isolate overflow-hidden w-full max-w-3xl rounded-2xl border border-slate-200/70 dark:border-slate-700/60 bg-white/90 dark:bg-slate-800/70 shadow-xl backdrop-blur px-8 py-7 lg:py-8 flex flex-col gap-8 animate-[fadeIn_.4s_ease]"
 				>
 					<div className="absolute -top-40 -right-40 h-80 w-80 rounded-full bg-emerald-500/10 blur-3xl" />
-					<h2 className="text-lg font-semibold tracking-wide text-slate-700 dark:text-slate-100">Dodaj szkołę</h2>
+					<h2 className="text-lg font-semibold tracking-wide text-slate-700 dark:text-slate-100">{initialValues ? 'Edytuj szkołę' : 'Dodaj szkołę'}</h2>
 
 					<div className="grid gap-10 md:grid-cols-2">
 						{/* LEFT */}
@@ -201,11 +288,11 @@ export default function EducationAddSchoolCard({ levels, storeRoute = 'employee.
 									<label className="block text-[11px] font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">Data zakończenia</label>
 									<input
 										type="date"
-										value={data.end_date}
+											value={data.end_date || ''}
 										onChange={e => { setData('end_date', e.target.value); validateField('end_date', e.target.value); }}
 										className="w-full rounded-md border-slate-300 dark:border-slate-600 dark:bg-slate-700/50 dark:text-slate-100 focus:border-emerald-500 focus:ring-emerald-500 text-sm"
 										min={data.start_date || undefined}
-										disabled={data.is_current} // <--- WYŁĄCZ JEŚLI W TRAKCIE
+										disabled={data.is_current}
 									/>
 									{(clientErrors.end_date || errors.end_date) && <p className="text-xs text-red-500 mt-0.5">{clientErrors.end_date || (errors as any).end_date}</p>}
 									<div className="flex items-center mt-2">
@@ -213,7 +300,14 @@ export default function EducationAddSchoolCard({ levels, storeRoute = 'employee.
 											type="checkbox"
 											id="is_current"
 											checked={!!data.is_current}
-											onChange={e => setData('is_current', e.target.checked)}
+											onChange={e => {
+												const checked = e.target.checked;
+												setData('is_current', checked);
+												if (checked) {
+													setData('end_date', null as any);
+													setData('end_year', null as any);
+												}
+											}}
 											className="mr-2 h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 dark:border-slate-600 dark:bg-slate-700"
 										/>
 										<label htmlFor="is_current" className="text-xs text-slate-600 dark:text-slate-300">

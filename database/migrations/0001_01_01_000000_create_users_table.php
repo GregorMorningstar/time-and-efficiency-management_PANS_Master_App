@@ -28,7 +28,15 @@ return new class extends Migration
             $table->boolean('experience_completed')->default(false)->index();
             $table->boolean('address_completed')->default(false)->index();
 
+            //urlop
+            $table->integer('annual_leave_entitlement')->default(20);
+            $table->integer('leave_balance')->default(20);
+            $table->integer('leave_used')->default(0);
+            $table->integer('carryover_leave')->default(0);
             $table->timestamp('email_verified_at')->nullable();
+
+            $table->integer('experience_months')->default(0); //months of experience
+            $table->integer('education_levels')->default(0); //highest education level add 8 years (98 months) for experience_months
             $table->string('password');
             $table->rememberToken();
             $table->timestamps();

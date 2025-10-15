@@ -18,6 +18,7 @@ interface ExperienceItem {
     zip_code?: string | null;
   barcode?: string | null;
     nip?: string | null;
+  verified?: boolean | number | string;
   actions?: {
     editHref?: string;
     deleteHref?: string;
@@ -34,6 +35,10 @@ export default function CareerCard({ experience }: CareerCardProps) {
   const [showDetails, setShowDetails] = useState(false);
   const detailsHref = `/employee/career/${experience.id}`;
   const editHref = `/employee/career/${experience.id}/edit`;
+
+  // Coerce verified from DB (bool/0/1/'0'/'1')
+  const v = (experience as any).verified;
+  const verified = v === true || v === 1 || v === '1' ? true : (v === false || v === 0 || v === '0' ? false : undefined);
 
   function handleDelete() {
     if (!confirm('Czy na pewno chcesz usunąć ten wpis?')) return;
@@ -55,8 +60,14 @@ export default function CareerCard({ experience }: CareerCardProps) {
 
   return (
     <>
-      <div className="relative flex flex-col my-6 bg-white shadow-sm border border-slate-200 rounded-lg w-96">
-        <div className="absolute inset-y-0 left-0 w-1 bg-emerald-500/70 dark:bg-emerald-500 rounded-r" />
+      <div
+        className={[
+          'relative flex flex-col my-6 bg-white shadow-sm border border-slate-200 rounded-lg w-96',
+          verified === true ? 'border-l-4 border-l-emerald-500' : '',
+          verified === false ? 'border-l-4 border-l-red-500' : '',
+        ].join(' ')}
+      >
+
 
         <div className="p-4 flex flex-col items-center">
           {experience.barcode ? (
@@ -158,7 +169,7 @@ export default function CareerCard({ experience }: CareerCardProps) {
               Usuń
             </button>
           </div>
-        
+
         </div>
       </div>
 

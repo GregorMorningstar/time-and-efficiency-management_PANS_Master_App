@@ -23,6 +23,8 @@ class Educations extends Model
         'rodo_accepted',
         'rodo_accepted_at',
         'barcode',
+        'verified',
+        'is_current',
     ];
 
     protected $casts = [

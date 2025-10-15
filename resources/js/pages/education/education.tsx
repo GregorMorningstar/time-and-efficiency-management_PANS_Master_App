@@ -68,7 +68,6 @@ export default function EducationListPage() {
 
   const totalPages = Math.max(1, Math.ceil(allItems.length / itemsPerPage));
 
-  // Ensure current page is valid when items change
   useEffect(() => {
     if (currentPage > totalPages) setCurrentPage(totalPages);
   }, [totalPages]);
@@ -77,10 +76,8 @@ export default function EducationListPage() {
 
   const empty = allItems.length === 0;
 
-  // Dodaj obsługę edycji i usuwania
   function handleEdit(id: number) {
-    // Przekierowanie do strony edycji (np. /employee/education/edit/:id)
-    window.location.href = `/employee/education/edit/${id}`;
+    window.location.href = `/employee/education/${id}/edit`;
   }
 
   function handleDelete(id: number) {
@@ -96,13 +93,11 @@ export default function EducationListPage() {
         }
       }
     } catch (e) {
-      // ignoruj i użyj fallbacku
     }
 
     router.post(url, { id }, {
       preserveState: true,
       onSuccess: () => {
-        // update local list and adjust pagination if needed
         setAllItems((prev) => {
           const next = prev.filter(it => it.id !== id);
           return next;

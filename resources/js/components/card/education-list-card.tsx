@@ -9,6 +9,7 @@ type EducationCardProps = {
         end_year: string | number | null;
         level?: string;
         diploma_path?: string | null;
+        verified?: boolean | number | string;
         barcode?: string | null;
     };
     onEdit?: (id: number) => void;
@@ -32,8 +33,19 @@ export default function EducationListCard({ education, onEdit, onDelete, levelLa
     const diplomaPath = (education as any).diploma_path as string | null | undefined;
     const [showPreview, setShowPreview] = React.useState(false);
 
-    return (
-        <div className="w-full max-w-md mx-auto bg-white/80 dark:bg-neutral-900/70 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 overflow-hidden">
+    const v = (education as any).verified;
+    const verified = v === true || v === 1 || v === '1' ? true : (v === false || v === 0 || v === '0' ? false : undefined);
+
+        return (
+                <div
+                        className={`relative w-full max-w-md mx-auto bg-white/80 dark:bg-neutral-900/70 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 overflow-hidden ${
+                                verified === true
+                                        ? 'border-l-4 border-l-emerald-500'
+                                        : verified === false
+                                        ? 'border-l-4 border-l-red-500'
+                                        : ''
+                        }`}
+                >
             <div className="p-4 flex flex-col items-center">
                 {barcode ? (
                     <div className="w-full flex justify-center mb-3">
@@ -49,7 +61,6 @@ export default function EducationListCard({ education, onEdit, onDelete, levelLa
                 )}
 
                 <div className="text-center w-full relative">
-                    {/* Polish title above */}
                     <div className="text-sm text-emerald-700 dark:text-emerald-300 font-semibold mb-1">Wykształcenie</div>
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{school}</h3>
                     <div className="mt-2 text-sm text-gray-700 dark:text-gray-300">
@@ -66,9 +77,7 @@ export default function EducationListCard({ education, onEdit, onDelete, levelLa
                         </div>
                     )}
 
-                    {/* Actions: Szczegóły (opens modal), Edytuj, Usuń */}
                     <div className="mt-4 flex items-center justify-center gap-3">
-                        {/* only show diploma/details button when NOT ongoing */}
                         {!ongoing && diplomaPath && (
                             <button
                                 type="button"
@@ -98,7 +107,6 @@ export default function EducationListCard({ education, onEdit, onDelete, levelLa
                         </button>
                     </div>
 
-                    {/* Diploma preview modal centered */}
                     {diplomaPath && showPreview && (
                         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={() => setShowPreview(false)}>
                             <div className="relative bg-white rounded shadow-lg p-4 max-w-3xl w-full mx-4" onClick={(e) => e.stopPropagation()}>
