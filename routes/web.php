@@ -9,6 +9,7 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\ModeratorController;
 use App\Http\Controllers\CompanyLookupController;
 use App\Http\Controllers\CareerController;
+use App\Http\Controllers\VacationCalendarController;
 use Illuminate\Support\Facades\Auth;
 
 Route::get('/', function () {
@@ -62,6 +63,10 @@ Route::middleware(['auth','verified','role:employee','flags'])->prefix('/employe
     //address routes
     Route::get('/address', [EmployeeController::class, 'address'])->name('employee.address');
 
+
+//calendar routes
+    Route::get('/calendar', [VacationCalendarController::class, 'index'])->name('employee.calendar');
+    Route::post('/calendar', [VacationCalendarController::class, 'store'])->name('employee.calendar.store');
 });
 
 

@@ -140,7 +140,6 @@ class EducationController extends Controller
 }
 public function create()
 {
-    // use enum (aliased as EducationsDegreeEnum) to provide select options
     return Inertia::render('education/add-education', [
         'educationLevels' => EducationsDegreeEnum::selectOptions(),
     ]);

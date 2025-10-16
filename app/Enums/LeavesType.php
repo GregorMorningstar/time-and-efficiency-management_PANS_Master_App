@@ -28,7 +28,7 @@ enum LeavesType: string
             public static function selectOptions(): array
             {
                 return array_map(
-                    fn(self $c) => ['value' => $c->value, 'label' => (new self())->translateLeaveTypeToPolish($c->value)],
+                    fn(self $c) => ['value' => $c->value, 'label' => $c->translateLeaveTypeToPolish($c->value)],
                     self::cases()
                 );
             }

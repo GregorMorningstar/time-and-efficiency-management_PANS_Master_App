@@ -74,10 +74,15 @@ class CheckEducationCareer
                 'employee.education.store',
                 'employee.education.edit',
                 'employee.education.update',
-                
+
 
                 //doświadczenia
                 'employee.experiences',
+
+                //kalendarz
+                'employee.calendar',
+                'employee.calendar.show',
+                'employee.calendar.store',
             ];
 
             $currentName = $request->route()?->getName();
