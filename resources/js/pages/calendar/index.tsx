@@ -1,19 +1,25 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from 'react';
 import { usePage } from '@inertiajs/react';
 import EmployeeLayout from "../employee/employee-layout";
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin from "@fullcalendar/interaction"
-import plLocale from '@fullcalendar/core/locales/pl'   // <- dodane
+import plLocale from '@fullcalendar/core/locales/pl'
+import timeGridPlugin from '@fullcalendar/timegrid'
 import CalendarAdd from "@/components/card/calendar-add";
+import Event from './event';
 
 export default function CalendarPage() {
+  const { props } = usePage<any>();
+  const flash = props?.flash ?? {};
+  const errors = props?.errors ?? {};
+
   const [isOpen, setIsOpen] = useState(false);
   const [clickedStart, setClickedStart] = useState<string | null>(null);
   const [clickedEnd, setClickedEnd] = useState<string | null>(null);
   const [workingDays, setWorkingDays] = useState<number>(0);
-  const { props } = usePage<any>();
   const types = props.types ?? [];
+  const events = props.events ?? [];
 
   const holidays = [
     '2025-01-01', // Nowy Rok
@@ -103,25 +109,142 @@ export default function CalendarPage() {
     setIsOpen(true);
   };
 
+  const [popover, setPopover] = useState<{
+    open: boolean;
+    x: number;
+    y: number;
+    data: null | {
+      id?: string | number;
+      title?: string;
+      start?: Date | string | null;
+      end?: Date | string | null;
+      allDay?: boolean;
+      type?: string;
+      description?: string;
+      color?: string;
+    };
+  }>({ open: false, x: 0, y: 0, data: null });
+
+  const [showGlobalErrors, setShowGlobalErrors] = useState(true);
+  useEffect(() => {
+    let t: number | undefined;
+    const hasErrors = errors && Object.keys(errors).length > 0;
+
+    if (popover.open) {
+      setShowGlobalErrors(false);
+      return;
+    }
+
+    if (hasErrors) {
+      setShowGlobalErrors(true);
+      t = window.setTimeout(() => setShowGlobalErrors(false), 5000);
+    } else {
+      setShowGlobalErrors(false);
+    }
+
+    return () => {
+      if (t) window.clearTimeout(t);
+    };
+  }, [JSON.stringify(errors), popover.open]);
+
+  const handleEventClick = (info: any) => {
+    info.jsEvent.preventDefault();
+    const x = info.jsEvent.clientX + 8;
+    const y = info.jsEvent.clientY + 8;
+    setPopover({
+      open: true,
+      x,
+      y,
+      data: {
+        id: info.event.id,
+        title: info.event.title,
+        start: info.event.start,
+        end: info.event.end,
+        allDay: info.event.allDay,
+        type: info.event.extendedProps?.type,
+        description: info.event.extendedProps?.description,
+        color: info.event.backgroundColor || info.event.borderColor,
+      },
+    });
+  };
+
+  const renderError = (key: string) => {
+    const v = errors[key];
+    if (!v) return null;
+    return (
+      <div className="mt-2 text-sm text-red-600">
+        {Array.isArray(v) ? v.join(' ') : v}
+      </div>
+    );
+  };
+
   return (
     <>
       <EmployeeLayout title="Kalendarz urlopowy">
         <div className="p-4">
-          <FullCalendar
-            plugins={[ dayGridPlugin, interactionPlugin ]}
-            initialView="dayGridMonth"
-            selectable={true}
-            selectMirror={true}
-            select={handleDateSelect}
-            dateClick={handleDateClick}
-            selectAllow={allowSelect}
-            firstDay={1}
-            locale={plLocale}
-            dayCellClassNames={(arg) => {
-              const iso = arg.date.toISOString().slice(0,10);
-              return isHolidayIso(iso) ? ['fc-holiday'] : [];
-            }}
-          />
+          {flash.success && (
+            <div className="mb-4 rounded bg-green-50 border border-green-200 text-green-800 px-3 py-2">
+              {flash.success}
+            </div>
+          )}
+
+          {!popover.open && showGlobalErrors && errors && Object.keys(errors).length > 0 && (
+            <div className="mb-4 rounded bg-red-50 border border-red-200 text-red-800 px-3 py-2">
+              <strong>Wystąpiły błędy:</strong>
+              <div className="mt-1">{Object.values(errors).flat().join(' ')}</div>
+            </div>
+          )}
+
+          <div className="mx-auto max-w-4xl">
+            <FullCalendar
+              plugins={[ dayGridPlugin, timeGridPlugin, interactionPlugin ]}
+              initialView="dayGridMonth"
+              headerToolbar={{
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay'
+              }}
+              selectable={true}
+              selectMirror={true}
+              select={handleDateSelect}
+              dateClick={handleDateClick}
+              selectAllow={allowSelect}
+              firstDay={1}
+              locale={plLocale}
+              height={500}
+              contentHeight={650}
+              aspectRatio={1.35}
+              events={events}
+              eventClick={handleEventClick}
+              dayCellClassNames={(arg) => {
+                const iso = arg.date.toISOString().slice(0,10);
+                return isHolidayIso(iso) ? ['fc-holiday'] : [];
+              }}
+            />
+
+            {popover.open && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center">
+                {/* ciemne, ale stonowane tło żeby czytelność była lepsza */}
+                <div
+                  className="absolute inset-0 bg-slate-700/60 backdrop-blur-sm"
+                  onClick={() => setPopover(p => ({ ...p, open: false }))}
+                />
+
+                {/* kontener karty — biała karta na szarym tle */}
+                <div className="relative z-10 w-full max-w-md mx-4">
+                  <div className="bg-white rounded-lg shadow-xl border border-slate-200 overflow-hidden">
+                    <div className="p-4">
+                      <Event
+                        event={popover.data}
+                        onClose={() => setPopover(p => ({ ...p, open: false }))}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
         </div>
       </EmployeeLayout>
 

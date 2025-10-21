@@ -9,6 +9,8 @@ use App\Repositories\ExperienceRepository;
 use App\Interfaces\ExperienceRepositoryInterface;
 use App\Repositories\FlagsRepository;
 use App\Interfaces\FlagsRepositoryInterface;
+use App\Repositories\VacationRepository;
+use App\Interfaces\VacationRepositoryInterface;
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -16,7 +18,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        // Binding the EducationRepositoryInterface to EducationRepository
+        // Education
         $this->app->bind(
             EducationRepositoryInterface::class,
            EducationRepository::class
@@ -32,6 +34,12 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(
            FlagsRepositoryInterface::class,
             FlagsRepository::class
+        );
+
+        // Calendar Repository Binding
+        $this->app->bind(
+            VacationRepositoryInterface::class,
+            VacationRepository::class
         );
     }
 

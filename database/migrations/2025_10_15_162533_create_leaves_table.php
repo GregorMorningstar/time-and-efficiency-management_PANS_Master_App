@@ -15,8 +15,10 @@ return new class extends Migration
         Schema::create('leaves', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+                $table->string('barcode', 13)->unique()->nullable();
             $table->date('start_date');
             $table->date('end_date');
+            $table->text('description')->nullable();
             $table->integer('days')->default(0);
             $table->enum('type', array_map(fn($c) => $c->value, LeavesType::cases()) )->index();
             $table->enum('status', array_map(fn($c) => $c->value, LeavesStatus::cases()) )->default(LeavesStatus::PENDING->value)->index();

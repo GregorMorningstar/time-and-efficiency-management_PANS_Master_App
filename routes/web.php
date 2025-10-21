@@ -67,6 +67,7 @@ Route::middleware(['auth','verified','role:employee','flags'])->prefix('/employe
 //calendar routes
     Route::get('/calendar', [VacationCalendarController::class, 'index'])->name('employee.calendar');
     Route::post('/calendar', [VacationCalendarController::class, 'store'])->name('employee.calendar.store');
+    Route::get('/calendar/{id}', [VacationCalendarController::class, 'show'])->name('employee.calendar.show'); // <- NEW
 });
 
 
