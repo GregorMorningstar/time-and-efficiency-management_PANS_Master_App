@@ -16,10 +16,11 @@ interface EventData {
 }
 type Props = {
     event: EventData;
+    
     onClose?: () => void;
 };
 
-export default function EventVacationCard({ event, onClose }: Props) {
+export default function EventVacationCard({ event, onClose,  }: Props) {
     const fmt = (d?: Date | string | null) => (d ? new Date(d).toLocaleDateString('pl-PL') : '-');
 
     const TYPE_COLORS: Record<string, string> = {

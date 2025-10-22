@@ -64,6 +64,11 @@ class User extends Authenticatable
         return $this->hasMany(Leaves::class);
     }
 
+
+    public function machines()
+    {
+        return $this->hasMany(Machine::class);
+    }
     //function
 
 

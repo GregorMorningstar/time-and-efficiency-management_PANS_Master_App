@@ -57,9 +57,8 @@ export default function EmployeeTopNav() {
     { label: 'Kalendarz',
       baseHref: '/employee/calendar',
       children: [
-        { label: 'Przegląd', href: '/employee/calendar' },
-        { label: 'Urlop', href: '/employee/calendar/leave' },
-        { label: 'Dodaj urlop', href: '/employee/calendar/leave/add' },
+        { label: 'Przegląd', href: '/employee/calendar/history' },
+
       ],
     },
   ];

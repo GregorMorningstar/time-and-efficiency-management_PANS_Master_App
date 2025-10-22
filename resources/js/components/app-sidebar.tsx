@@ -1,9 +1,10 @@
 import { NavMain } from '@/components/nav-main';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { Link, usePage } from '@inertiajs/react';
-import { MonitorCog, Folder, LayoutGrid, BookOpen, Factory, Calendar,MessagesSquare, BrainCog, LogOut   } from 'lucide-react';
+import { MonitorCog, Folder,LayoutGrid, BookOpen, Factory, Calendar,MessagesSquare, BrainCog, LogOut,  Cog   } from 'lucide-react';
 import AppLogo from './app-logo';
 import React, { Suspense, useEffect, useRef, useState } from 'react';
+import { machine } from 'os';
 const LazyBarcode = React.lazy(() => import('react-barcode'));
 export function AppSidebar() {
     interface User {
@@ -104,6 +105,11 @@ export function AppSidebar() {
             href: '/profile',
             icon: Folder,
         },
+        {
+            title: 'Moje maszyny',
+            href: '/employee/machines',
+            icon: Cog ,
+        },
     ];
 
     // Wspólne menu dla wszystkich zalogowanych
@@ -117,11 +123,7 @@ export function AppSidebar() {
                      href: '/chat',
                      icon: MessagesSquare ,
                  },
-                 {
-                     title: 'Maszyny',
-                     href: '#',
-                     icon: BrainCog,
-                 },
+
                  {
                      title: 'Awarie',
                      href: '#',

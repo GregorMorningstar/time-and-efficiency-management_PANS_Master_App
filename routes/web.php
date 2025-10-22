@@ -10,6 +10,7 @@ use App\Http\Controllers\ModeratorController;
 use App\Http\Controllers\CompanyLookupController;
 use App\Http\Controllers\CareerController;
 use App\Http\Controllers\VacationCalendarController;
+use App\Http\Controllers\MachinesController;
 use Illuminate\Support\Facades\Auth;
 
 Route::get('/', function () {
@@ -64,10 +65,15 @@ Route::middleware(['auth','verified','role:employee','flags'])->prefix('/employe
     Route::get('/address', [EmployeeController::class, 'address'])->name('employee.address');
 
 
-//calendar routes
+    //calendar routes
     Route::get('/calendar', [VacationCalendarController::class, 'index'])->name('employee.calendar');
     Route::post('/calendar', [VacationCalendarController::class, 'store'])->name('employee.calendar.store');
     Route::get('/calendar/{id}', [VacationCalendarController::class, 'show'])->name('employee.calendar.show'); // <- NEW
+
+    //maszyny routes
+    Route::get('/machines', [MachinesController::class, 'index'])->name('employee.machines.index');
+
+
 });
 
 

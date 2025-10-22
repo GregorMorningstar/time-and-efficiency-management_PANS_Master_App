@@ -83,6 +83,9 @@ class CheckEducationCareer
                 'employee.calendar',
                 'employee.calendar.show',
                 'employee.calendar.store',
+
+                //maszyny
+                'employee.machines.index',
             ];
 
             $currentName = $request->route()?->getName();

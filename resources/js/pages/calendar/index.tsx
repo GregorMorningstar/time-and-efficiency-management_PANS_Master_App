@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { usePage } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import EmployeeLayout from "../employee/employee-layout";
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
@@ -8,8 +8,14 @@ import plLocale from '@fullcalendar/core/locales/pl'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import CalendarAdd from "@/components/card/calendar-add";
 import Event from './event';
-
+import Breadcrumbs from '@/components/ui/breadcrumbs';
 export default function CalendarPage() {
+
+     const breadcrumbs = [
+    { label: 'Panel', href: route('dashboard') },
+    { label: 'Kalendarz', href: route('employee.calendar') },
+  ];
+
   const { props } = usePage<any>();
   const flash = props?.flash ?? {};
   const errors = props?.errors ?? {};
@@ -181,6 +187,8 @@ export default function CalendarPage() {
   return (
     <>
       <EmployeeLayout title="Kalendarz urlopowy">
+        <Head title="Kalendarz" />
+          <Breadcrumbs items={breadcrumbs} />
         <div className="p-4">
           {flash.success && (
             <div className="mb-4 rounded bg-green-50 border border-green-200 text-green-800 px-3 py-2">

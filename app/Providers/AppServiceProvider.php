@@ -11,6 +11,8 @@ use App\Repositories\FlagsRepository;
 use App\Interfaces\FlagsRepositoryInterface;
 use App\Repositories\VacationRepository;
 use App\Interfaces\VacationRepositoryInterface;
+use App\Repositories\MachinesRepository;
+use App\Interfaces\MachinesRepositoryInterface;
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -40,6 +42,11 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(
             VacationRepositoryInterface::class,
             VacationRepository::class
+        );
+        //machines
+        $this->app->bind(
+            MachinesRepositoryInterface::class,
+            MachinesRepository::class
         );
     }
 
