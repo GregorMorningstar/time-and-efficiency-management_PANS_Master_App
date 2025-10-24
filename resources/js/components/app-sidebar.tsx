@@ -71,6 +71,11 @@ export function AppSidebar() {
             href: '/dashboard/moderator/departments',
             icon: BookOpen,
         },
+        {
+            title: 'pracownicy',
+            href: '/dashboard/moderator/employees',
+            icon: Folder,
+        },
     ];
 
     // Menu dla administratora

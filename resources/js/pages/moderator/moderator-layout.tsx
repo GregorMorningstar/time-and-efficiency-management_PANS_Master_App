@@ -33,7 +33,6 @@ export default function ModeratorLayout({
       <div className="flex gap-6">
         {menu && <aside className="w-64 shrink-0">{menu}</aside>}
         <main className="flex-1">
-          <h1 className="text-xl font-semibold mb-4">{title}</h1>
           {children ?? <p className="text-gray-500">Brak zawartości.</p>}
         </main>
       </div>
