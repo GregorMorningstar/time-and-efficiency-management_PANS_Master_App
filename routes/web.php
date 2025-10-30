@@ -11,6 +11,8 @@ use App\Http\Controllers\CompanyLookupController;
 use App\Http\Controllers\CareerController;
 use App\Http\Controllers\VacationCalendarController;
 use App\Http\Controllers\MachinesController;
+use App\Http\Controllers\ProducionController;
+use App\Http\Controllers\PlanningController;
 use Illuminate\Support\Facades\Auth;
 
 Route::get('/', function () {
@@ -37,6 +39,16 @@ Route::middleware(['auth','verified','role:admin'])->prefix('/admin')->group(fun
 //moderator (role check temporarily disabled in revert state)
 Route::middleware(['auth','verified','role:moderator'])->prefix('/moderator')->group(function () {
     Route::get('/dashboard', [ModeratorController::class, 'index'])->name('moderator.dashboard');
+
+
+    //maszyny routes
+    Route::get('/machines', [MachinesController::class, 'machineModeratorDashboard'])->name('moderator.machines.dashboard');
+
+//production routes
+    Route::get('/production', [ProducionController::class, 'index'])->name('moderator.production.dashboard');
+
+    //planning routes
+    Route::get('/planning', [PlanningController::class, 'index'])->name('moderator.planning.dashboard');
 });
 
 //employee (role check temporarily disabled in revert state)

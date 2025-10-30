@@ -17,4 +17,9 @@ class MachinesService
         return $this->machinesRepository->getAllMachinesByUserId($userId);
     }
 
+
+    public function getAllMachines()
+    {
+        return $this->machinesRepository->getAllMachines();
+    }
 }

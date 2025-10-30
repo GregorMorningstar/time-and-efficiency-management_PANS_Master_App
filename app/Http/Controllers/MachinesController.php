@@ -25,4 +25,15 @@ public function index()
             'machineStatuses' => MachineStatus::toArray(),
         ]);
     }
+
+
+public function machineModeratorDashboard()
+    {
+        $allMachines = $this->machinesService->getAllMachines();
+
+        return Inertia::render('moderator/machines/index', [
+            'machines' => $allMachines,
+            'machineStatuses' => MachineStatus::toArray(),
+        ]);
+}
 }

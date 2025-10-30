@@ -14,4 +14,9 @@ class MachinesRepository
     {
         return $this->machineModel->where('user_id', $userId)->get();
     }
+
+    public function getAllMachines()
+    {
+        return $this->machineModel->all();
+    }
 }

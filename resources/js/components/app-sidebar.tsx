@@ -53,7 +53,7 @@ export function AppSidebar() {
         },
         {
             title: 'produkcja',
-              href: '/dashboard/moderator/production',
+              href: '/moderator/production',
             icon: Factory,
         },
         {
@@ -63,7 +63,7 @@ export function AppSidebar() {
         },
         {
             title: 'planowanie',
-            href: '/dashboard/moderator/planning',
+            href: '/moderator/planning',
             icon: Calendar,
         },
         {

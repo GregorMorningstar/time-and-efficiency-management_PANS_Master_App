@@ -32,9 +32,10 @@ export default function ModeratorTopNav() {
     { label: 'Dashboard', href: '/moderator/dashboard' },
     {
       label: 'Maszyny',
+      href: '/moderator/maszyny',
       children: [
-        { label: 'Link 2.1', href: '/moderator/link2/1' },
-        { label: 'Link 2.2', href: '/moderator/link2/2' },
+        { label: 'Lista maszyn', href: '/moderator/maszyny/lista' },
+        { label: 'Dodaj maszynę', href: '/moderator/maszyny/dodaj' },
       ],
     },
     {
@@ -71,76 +72,48 @@ export default function ModeratorTopNav() {
             {/* Tabs */}
             <div className="hidden sm:flex items-center space-x-2">
               {nav.map((item, idx) => {
-                // submenu Link 2
-                if (item.children && item.label === 'Link 2') {
+                // submenu dla elementów z children — obsługujemy dynamicznie (Maszyny / Link 3)
+                if (item.children) {
+                  const isOpen = item.label === 'Maszyny' ? open2 : open3;
+                  const setOpen = item.label === 'Maszyny' ? setOpen2 : setOpen3;
+                  const clearTimer = item.label === 'Maszyny' ? clearTimer2 : clearTimer3;
+                  const timerRef = item.label === 'Maszyny' ? timer2 : timer3;
+
                   return (
                     <div
                       key={idx}
                       className="relative"
-                      onMouseEnter={() => { clearTimer2(); setOpen2(true); }}
-                      onMouseLeave={() => { clearTimer2(); timer2.current = window.setTimeout(() => setOpen2(false), CLOSE_DELAY); }}
+                      onMouseEnter={() => { clearTimer(); setOpen(true); }}
+                      onMouseLeave={() => { clearTimer(); timerRef.current = window.setTimeout(() => setOpen(false), CLOSE_DELAY); }}
                     >
-                      <button
-                        onClick={() => { clearTimer2(); setOpen2(v => !v); }}
-                        className={`px-3.5 py-2 rounded-md text-sm font-medium flex items-center gap-2 transition-shadow duration-150 focus:outline-none ${
-                          open2 || item.children.some(c => isActive(c.href))
-                            ? 'bg-white text-indigo-700 border border-indigo-100 shadow-sm'
-                            : 'text-slate-600 hover:bg-slate-50 hover:shadow-sm'
-                        }`}
-                        aria-expanded={open2}
-                      >
-                        {item.label}
-                        <svg className={`w-3 h-3 transition-transform ${open2 ? 'rotate-180' : ''}`} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 011.08 1.04l-4.25 4.25a.75.75 0 01-1.06 0L5.21 8.27a.75.75 0 01.02-1.06z" clipRule="evenodd" /></svg>
-                      </button>
+                      <div className={`flex items-center rounded-md ${isOpen || item.children.some(c => isActive(c.href)) ? 'bg-white border border-indigo-100 shadow-sm' : ''}`}>
+                        {/* label jako link jeśli href istnieje */}
+                        {item.href ? (
+                          <Link
+                            href={item.href}
+                            className={`px-3.5 py-2 text-sm font-medium ${isActive(item.href) ? 'text-indigo-700' : 'text-slate-600 hover:text-slate-900'}`}
+                          >
+                            {item.label}
+                          </Link>
+                        ) : (
+                          <span className="px-3.5 py-2 text-sm font-medium text-slate-600">{item.label}</span>
+                        )}
 
-                      {open2 && (
-                        <div
-                          className="absolute left-0 mt-2 w-44 bg-white border border-slate-200 rounded-md shadow-sm z-20"
-                          onMouseEnter={() => { clearTimer2(); setOpen2(true); }}
-                          onMouseLeave={() => { clearTimer2(); timer2.current = window.setTimeout(() => setOpen2(false), CLOSE_DELAY); }}
+                        {/* caret - oddzielny przycisk do rozwijania */}
+                        <button
+                          onClick={() => { clearTimer(); setOpen(v => !v); }}
+                          aria-expanded={isOpen}
+                          className="px-2 py-2 text-sm text-slate-400 hover:text-slate-600 focus:outline-none"
                         >
-                          {item.children.map((c, i) => (
-                            <Link
-                              key={i}
-                              href={c.href}
-                              className={`block px-4 py-2 text-sm transition-colors ${isActive(c.href) ? 'text-indigo-700 bg-indigo-50' : 'text-slate-700 hover:bg-slate-50'}`}
-                            >
-                              {c.label}
-                            </Link>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  );
-                }
+                          <svg className={`w-3 h-3 transition-transform ${isOpen ? 'rotate-180' : ''}`} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 011.08 1.04l-4.25 4.25a.75.75 0 01-1.06 0L5.21 8.27a.75.75 0 01.02-1.06z" clipRule="evenodd" /></svg>
+                        </button>
+                      </div>
 
-                // submenu Link 3
-                if (item.children && item.label === 'Link 3') {
-                  return (
-                    <div
-                      key={idx}
-                      className="relative"
-                      onMouseEnter={() => { clearTimer3(); setOpen3(true); }}
-                      onMouseLeave={() => { clearTimer3(); timer3.current = window.setTimeout(() => setOpen3(false), CLOSE_DELAY); }}
-                    >
-                      <button
-                        onClick={() => { clearTimer3(); setOpen3(v => !v); }}
-                        className={`px-3.5 py-2 rounded-md text-sm font-medium flex items-center gap-2 transition-shadow duration-150 focus:outline-none ${
-                          open3 || item.children.some(c => isActive(c.href))
-                            ? 'bg-white text-indigo-700 border border-indigo-100 shadow-sm'
-                            : 'text-slate-600 hover:bg-slate-50 hover:shadow-sm'
-                        }`}
-                        aria-expanded={open3}
-                      >
-                        {item.label}
-                        <svg className={`w-3 h-3 transition-transform ${open3 ? 'rotate-180' : ''}`} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 011.08 1.04l-4.25 4.25a.75.75 0 01-1.06 0L5.21 8.27a.75.75 0 01.02-1.06z" clipRule="evenodd" /></svg>
-                      </button>
-
-                      {open3 && (
+                      {isOpen && (
                         <div
                           className="absolute left-0 mt-2 w-44 bg-white border border-slate-200 rounded-md shadow-sm z-20"
-                          onMouseEnter={() => { clearTimer3(); setOpen3(true); }}
-                          onMouseLeave={() => { clearTimer3(); timer3.current = window.setTimeout(() => setOpen3(false), CLOSE_DELAY); }}
+                          onMouseEnter={() => { clearTimer(); setOpen(true); }}
+                          onMouseLeave={() => { clearTimer(); timerRef.current = window.setTimeout(() => setOpen(false), CLOSE_DELAY); }}
                         >
                           {item.children.map((c, i) => (
                             <Link
