@@ -27,7 +27,6 @@ export default function ModeratorLayout({
       <Head title={title} />
       {showTopNav && (
         <div className="mb-4">
-          <ModeratorTopNav />
         </div>
       )}
       <div className="flex gap-6">

@@ -32,7 +32,6 @@ const ChatPage: React.FC<ChatPageProps> = ({ user_id, other_user_id, users, chat
   const [input, setInput] = useState('');
   const [echoStatus, setEchoStatus] = useState<string>('init');
   const castConnector = () => (echo as any).connector?.pusher;
-  // ref do auto-scroll na dół listy wiadomości
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const [search, setSearch] = useState('');
   const [onlineIds, setOnlineIds] = useState<number[]>([]);
@@ -49,10 +48,10 @@ const ChatPage: React.FC<ChatPageProps> = ({ user_id, other_user_id, users, chat
 
   useEffect(() => {
   let cancelled = false;
-  let channel: any = null; // prywatny kanał użytkownika
-  let presenceChannel: any = null; // presence.chat
+  let channel: any = null;
+  let presenceChannel: any = null;
   let channelName: string | null = null;
-  const boot = async () => {
+  const boot = async () => {``
       let attempts = 0;
       while (!(window as any).Echo && attempts < 20) {
         await new Promise(r => setTimeout(r, 100));
@@ -71,14 +70,13 @@ const ChatPage: React.FC<ChatPageProps> = ({ user_id, other_user_id, users, chat
         .listen('.MessageSent', (e: any) => {
           console.debug('Odebrano event MessageSent', e);
           setMessages(prev => {
-              // unik duplikatu: jeśli już istnieje (po optimistycznym dodaniu) nie dodajemy
               if (prev.some(m => m.id === e.chatMessage.id)) return prev;
               return [...prev, e.chatMessage];
           });
         });
       try { setTimeout(()=>{ try { console.debug('[Echo] Lista kanałów po', Object.keys(castConnector()?.channels?.channels || {})); } catch {} },500);} catch {}
       // monitoruj stan
-      // Presence channel subskrypcja dla online status
+
       try {
         // Presence channel for online status: use logical name 'chat' (Echo will prefix 'presence-')
         presenceChannel = (echo as any).join('chat')

@@ -58,7 +58,7 @@ export function AppSidebar() {
         },
         {
             title: 'Szczegóły maszyn',
-            href: '/dashboard/moderator/machines',
+            href: '/moderator/machines',
             icon: BrainCog,
         },
         {
@@ -73,7 +73,7 @@ export function AppSidebar() {
         },
         {
             title: 'pracownicy',
-            href: '/dashboard/moderator/employees',
+            href: '/moderator/employees',
             icon: Folder,
         },
     ];
