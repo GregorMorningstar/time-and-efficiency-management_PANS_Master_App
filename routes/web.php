@@ -43,7 +43,8 @@ Route::middleware(['auth','verified','role:moderator'])->prefix('/moderator')->g
 
     //maszyny routes
     Route::get('/machines', [MachinesController::class, 'machineModeratorDashboard'])->name('moderator.machines.dashboard');
-
+    Route::post('/machines', [MachinesController::class, 'store'])->name('moderator.machines.store');
+    Route::get('/machines/add', [MachinesController::class, 'addMachine'])->name('moderator.machines.add');
 //production routes
     Route::get('/production', [ProducionController::class, 'index'])->name('moderator.production.dashboard');
 

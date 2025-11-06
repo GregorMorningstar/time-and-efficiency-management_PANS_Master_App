@@ -21,7 +21,9 @@ export default function ModeratorTopNavMachines() {
   };
 
   const nav: NavItem[] = [
-    { label: 'Lista maszyn', href: '/moderator/dashboard' },
+    { label: 'Lista maszyn', href: '/moderator/machines' },
+    { label: 'Dodaj', href: '/moderator/machines/add' },
+
     {
       label: 'Awarie',
       href: '/moderator/machines/failures',

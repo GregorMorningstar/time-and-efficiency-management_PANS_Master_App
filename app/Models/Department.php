@@ -18,8 +18,7 @@ protected $fillable = [
 
   protected static function booted()
     {
-        // Use `self` here so the closure receives the actual model instance (App\Models\Educations)
-        static::created(function (self $department) {
+        static::created(function (Department $department) {
             if (! $department->barcode) {
                 $prefix = '5000';
                 $barcode = $prefix . str_pad((string) $department->id, 13 - strlen($prefix), '0', STR_PAD_LEFT);

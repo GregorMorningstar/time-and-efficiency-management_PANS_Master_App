@@ -17,6 +17,9 @@ class MachinesService
         return $this->machinesRepository->getAllMachinesByUserId($userId);
     }
 
+    public function getAllMachinesPaginate() {
+        return $this->machinesRepository->getAllMachinesPaginate();
+    }
 
     public function getAllMachines()
     {

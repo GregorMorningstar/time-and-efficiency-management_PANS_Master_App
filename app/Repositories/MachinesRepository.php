@@ -15,6 +15,10 @@ class MachinesRepository
         return $this->machineModel->where('user_id', $userId)->get();
     }
 
+    public function getAllMachinesPaginate() {
+        return $this->machineModel->paginate(10);
+    }
+
     public function getAllMachines()
     {
         return $this->machineModel->all();
