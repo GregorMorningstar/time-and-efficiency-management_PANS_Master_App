@@ -33,7 +33,7 @@ public function machineModeratorDashboard()
     {
         $allMachines = $this->machinesService->getAllMachinesPaginate();
 
-    
+
         return Inertia::render('moderator/machines/index', [
             'machines' => $allMachines,
             'machineStatuses' => MachineStatus::toArray(),
@@ -51,10 +51,29 @@ public function machineModeratorDashboard()
 
     public function store(Request $request)
     {
-dd($request->all());
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'model' => 'required|string|max:255',
+            'year_of_production' => 'nullable|integer|min:1800|max:' . date('Y'),
+            'serial_number' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'working_hours' => 'nullable|integer|min:0|max:999999999',
+            'max_productions_per_hour' => 'nullable|integer|min:0|max:999999',
+            'department_id' => 'nullable|integer|exists:departments,id',
+            'image' => 'nullable|image|mimes:jpeg,png|max:15360', // size in KB -> 15 MB
+        ]);
+
+        if ($request->hasFile('image')) {
+            $validated['image'] = $request->file('image');
+        }
+//dd($validated);
+        $this->machinesService->store($validated);
+
+        return redirect()->route('moderator.machines.dashboard')
+            ->with('success', 'Maszyna została dodana pomyślnie');
     }
 
-  
 
-   
+
+
 }

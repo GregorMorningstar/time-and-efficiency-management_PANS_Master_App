@@ -8,5 +8,6 @@ interface MachinesRepositoryInterface
  public function getAllMachinesByUserId($userId);
  public function getAllMachines();
  public function getAllMachinesPaginate();
+ public function store(array $data);
 
 }

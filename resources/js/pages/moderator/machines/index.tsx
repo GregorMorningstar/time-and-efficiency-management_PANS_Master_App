@@ -2,7 +2,7 @@ import ModeratorLayout from "../moderator-layout";
 import ModeratorTopNavMachines from "@/components/app-topnav-moderator-machines";
 import ListMachines from "@/components/card/machines-list";
 type Props = {
-  machines?: any[];
+  machines?: any[] | { data?: any[] };
 };
 
 export default function ModeratorMachinesPage({ machines }: Props) {
@@ -11,7 +11,8 @@ export default function ModeratorMachinesPage({ machines }: Props) {
     { label: 'Maszyny', href: route('moderator.machines.dashboard') },
   ];
 
-  const hasMachines = Array.isArray(machines) && machines.length > 0;
+  const items = Array.isArray(machines) ? machines : (machines?.data ?? []);
+  const hasMachines = Array.isArray(items) && items.length > 0;
 
   return (
   <>
@@ -19,7 +20,7 @@ export default function ModeratorMachinesPage({ machines }: Props) {
     <ModeratorTopNavMachines />
 
         {hasMachines ? (
-          <ListMachines machines={machines} />
+          <ListMachines machines={items} />
         ) : (
           <div className="p-6 bg-white rounded shadow">
             <h4 className="text-lg font-medium mb-2">Brak maszyn</h4>
