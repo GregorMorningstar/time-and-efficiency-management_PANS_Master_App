@@ -2,8 +2,9 @@
 
 namespace App\Interfaces;
 
-use App\Models\Educations;
+use Illuminate\Support\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
+use App\Models\Educations;
 
 interface EducationRepositoryInterface
 {
@@ -11,4 +12,6 @@ interface EducationRepositoryInterface
     public function createEducation(array $data): Educations;
     public function deleteEducationById(int $id): bool;
     public function getEducationById(int $id): ?Educations;
+    public function getAllEducationByUserId(int $userId): array;
+    public function getUnverifiedEducations(): Collection;
 }

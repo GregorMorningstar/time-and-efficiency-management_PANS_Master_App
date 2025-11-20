@@ -50,7 +50,17 @@ Route::middleware(['auth','verified','role:moderator'])->prefix('/moderator')->g
 
     //planning routes
     Route::get('/planning', [PlanningController::class, 'index'])->name('moderator.planning.dashboard');
+
+    //employee routes
+Route::get('/employee', [ModeratorController::class, 'employeeIndex'])->name('moderator.employee.index');
+
+//employee education verification
+Route::get('/employee/check-education', [ModeratorController::class, 'checkEducation'])->name('moderator.employee.check-education');
+Route::get('/employee/check-experience/{id}', [ModeratorController::class, 'lookExperienceById'])->name('moderator.employee.check-experience');
+Route::post('/education/{id}/verify', [ModeratorController::class, 'verifyEducation'])->name('moderator.education.verify');
 });
+
+
 
 //employee (role check temporarily disabled in revert state)
 Route::middleware(['auth','verified','role:employee','flags'])->prefix('/employee')->group(function () {

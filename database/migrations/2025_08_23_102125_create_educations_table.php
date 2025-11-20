@@ -51,7 +51,7 @@ return new class extends Migration
             // RODO
             $table->boolean('rodo_accepted')->default(false);
             $table->timestamp('rodo_accepted_at')->nullable();
-
+            $table->timestamp('verified_at')->nullable();
             $table->timestamps();
 
             // Indeksy

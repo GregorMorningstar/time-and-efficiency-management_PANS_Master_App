@@ -4,12 +4,15 @@ namespace App\Services;
 
 use App\Models\Educations;
 use App\Models\User;
-use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\File;
-use Illuminate\Support\Str;
+use App\Enums\EducationsDegree;
 use Carbon\Carbon;
 use App\Interfaces\EducationRepositoryInterface;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
+use Illuminate\Support\Collection;
+
 
 class EducationService
 {
@@ -19,16 +22,12 @@ class EducationService
     public function __construct(private readonly EducationRepositoryInterface $educationRepository)
     {
     }
-
-
-
     public function create(array $data)
     {
         $education = $this->educationRepository->createEducation($data);
         $this->ensureEducationCompletedFlag($education->user_id);
         return $education;
     }
-
     public function createEducation(User $user, array $validated, ?UploadedFile $diploma = null): Educations
     {
         $startDate = Carbon::parse($validated['start_date']);
@@ -66,7 +65,6 @@ class EducationService
 
         return $education;
     }
-
     /**
      * Zwraca paginowane edukacje dla użytkownika.
      */
@@ -167,5 +165,34 @@ class EducationService
         $this->ensureEducationCompletedFlag($user->id);
 
         return $education;
+    }
+
+
+    public function getAllUserWithNoCheckEducation(): Collection
+    {
+        return $this->educationRepository->getUnverifiedEducations();
+    }
+   /**
+     * Zwraca najwyższy poziom edukacji spośród zakończonych wpisów użytkownika.
+     * Wynik: ['key' => string, 'years' => int, 'label' => string] lub null gdy brak.
+     */
+    public function highestEducationForUser(User $user): ?array
+    {
+     $educationsByUser = $this->educationRepository->getAllEducationByUserId($user->id);
+
+        $completedEducations = array_filter($educationsByUser, function ($edu) {
+            return empty($edu['is_current']) && !empty($edu['end_date']);
+        });
+
+        if (empty($completedEducations)) {
+            return null;
+        }
+        $highest = array_reduce($completedEducations, function ($acc, $edu) {
+            $level = $edu['level'];
+            $years = EducationsDegree::EDUCATION_YEARS[$level] ?? 0;
+            return $years > ($acc['years'] ?? 0) ? ['key' => $level, 'years' => $years, 'label' => EducationsDegree::tryFrom($level)->label()] : $acc;
+        }, []);
+
+        return $highest ?: null;
     }
 }

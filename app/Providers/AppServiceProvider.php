@@ -13,6 +13,9 @@ use App\Repositories\VacationRepository;
 use App\Interfaces\VacationRepositoryInterface;
 use App\Repositories\MachinesRepository;
 use App\Interfaces\MachinesRepositoryInterface;
+use App\Repositories\UserRepository;
+use App\Interfaces\UserRepositoryInterface;
+
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -47,6 +50,11 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(
             MachinesRepositoryInterface::class,
             MachinesRepository::class
+        );
+        //user repository binding
+        $this->app->bind(
+           UserRepositoryInterface::class,
+            UserRepository::class
         );
     }
 

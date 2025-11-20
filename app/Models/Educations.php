@@ -24,6 +24,7 @@ class Educations extends Model
         'rodo_accepted_at',
         'barcode',
         'verified',
+        'verified_at',
         'is_current',
     ];
 

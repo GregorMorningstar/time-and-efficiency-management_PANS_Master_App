@@ -73,7 +73,7 @@ export function AppSidebar() {
         },
         {
             title: 'pracownicy',
-            href: '/moderator/employees',
+            href: '/moderator/employee',
             icon: Folder,
         },
     ];

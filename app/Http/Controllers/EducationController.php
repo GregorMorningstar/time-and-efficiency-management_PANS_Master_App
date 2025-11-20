@@ -28,10 +28,8 @@ class EducationController extends Controller
     {
         $educations = $this->service->paginatedFor(request()->user(), 20);
 
-        // Prefer enum-backed options; provide labels for frontend
         $educationLevels = EducationsDegreeEnum::selectOptions();
-
-        // If enum isn't available or returns empty, try the DB table as fallback
+        $maxEducationLevel = $this->service->highestEducationForUser(request()->user());
         if (empty($educationLevels) && Schema::hasTable('education_degrees')) {
             $educationLevels = DB::table('education_degrees')
                 ->orderBy('id')
@@ -39,10 +37,11 @@ class EducationController extends Controller
                 ->map(fn($r) => ['value' => $r->id, 'label' => $r->name])
                 ->toArray();
         }
-
+//dd($maxEducationLevel);
         return Inertia::render('education/education', [
             'educations'      => $educations,
             'educationLevels' => $educationLevels,
+            'highestEducationLabel' => $maxEducationLevel,
         ]);
     }
 
