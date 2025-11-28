@@ -9,7 +9,7 @@ export default function CheckExperienceEmployeePage() {
     const { education } = usePage<any>().props;
     const breadcrumbs = [
         { label: 'Panel Moderatora', href: route('moderator.dashboard') },
-        { label: 'Sprawdzenie Doświadczenia Pracownika', href: route('moderator.employee.check-education') },
+        { label: 'Sprawdzenie Edukacji Pracownika', href: route('moderator.employee.check-education') },
     ];
 
     // zapewnij domyślną tablicę

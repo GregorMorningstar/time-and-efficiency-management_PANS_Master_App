@@ -13,7 +13,9 @@ use Illuminate\Pagination\LengthAwarePaginator;
 
 class ExperienceService
 {
-    public function __construct(private readonly ExperienceRepositoryInterface $repo, private readonly FlagsService $flagsService) {}
+    public function __construct(private readonly ExperienceRepositoryInterface $repo,
+     private readonly FlagsService $flagsService,
+     private readonly UserService $userService) {}
 
     /**
      *
@@ -67,6 +69,7 @@ class ExperienceService
         return $this->repo->getForAuthUser($user->id, $perPage);
 
     }
+
     public function deleteExperience(int $id): bool
     {
         $experience = $this->repo->findById($id);
@@ -153,4 +156,26 @@ class ExperienceService
             throw $e;
         }
     }
-}
+    public function getAllUnconfirmedExperiences() : array
+    {
+        return $this->repo->getAllUnconfirmedExperiences();
+    }
+
+    /**
+     * Zwraca wynik działania: ['success' => bool, 'months' => int, 'experience' => ?Experiences]
+     */
+    public function confirmExperience(int $id): \Illuminate\Http\RedirectResponse
+    {
+        $preview = $this->repo->confirmExperience($id);
+
+        $experience = $preview['experience'] ?? null;
+        $experience ['verified'] = true;
+        $experience->save();
+        $user = $this->userService->addMonthsToUserExperience($experience->user, (int) ($preview['months'] ?? 0));
+  return redirect()->back()->with('success', 'Doświadczenie zostało zweryfikowane.');
+        }
+
+
+    }
+
+

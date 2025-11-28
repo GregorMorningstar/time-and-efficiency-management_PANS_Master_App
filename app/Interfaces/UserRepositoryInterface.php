@@ -12,4 +12,5 @@ interface UserRepositoryInterface
     public function findAll(): Collection;
     public function paginate(int $perPage = 20): LengthAwarePaginator;
     public function getEducationLevelById(int $userId): ?string;
+    public function addExperienceMonthsToUser(int $userId, int $months): bool;
 }

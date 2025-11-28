@@ -58,6 +58,9 @@ Route::get('/employee', [ModeratorController::class, 'employeeIndex'])->name('mo
 Route::get('/employee/check-education', [ModeratorController::class, 'checkEducation'])->name('moderator.employee.check-education');
 Route::get('/employee/check-experience/{id}', [ModeratorController::class, 'lookExperienceById'])->name('moderator.employee.check-experience');
 Route::post('/education/{id}/verify', [ModeratorController::class, 'verifyEducation'])->name('moderator.education.verify');
+//career experience verification
+Route::get('/employee/check-all-career', [ModeratorController::class, 'checkCareer'])->name('moderator.employee.check-career');
+Route::post('/experience/{id}/verify', [ModeratorController::class, 'verifyExperience'])->name('moderator.experience.verify');
 });
 
 

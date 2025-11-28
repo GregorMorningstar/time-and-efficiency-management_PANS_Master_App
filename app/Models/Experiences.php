@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\User;
 
 class Experiences extends Model
 {
@@ -23,7 +24,7 @@ class Experiences extends Model
         'is_current',
         'barcode',
         'work_certificate_scan_path',
-        
+
 
     ];
 
@@ -50,9 +51,12 @@ class Experiences extends Model
             }
         });
     }
+    /**
+     * Owner (user) of the experience
+     */
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id', 'id');
     }
 
 }

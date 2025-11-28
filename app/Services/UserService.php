@@ -79,4 +79,32 @@ class UserService
             abort(500, 'Failed to verify education: ' . $e->getMessage());
         }
     }
+    public function findByIdForUser(int $id, ?User $user = null): ?User
+    {
+        if ($user && $user->id === $id) {
+            return $user;
+        }
+        return $this->users->find($id);
+    }
+    public function handleExperienceVerification(User $user, int $months): ?User
+    {
+        if (! $user) {
+            return null;
+        }
+
+        $success = $this->users->addExperienceMonthsToUser($user->id, $months);
+        if ($success) {
+            return $this->findByIdForUser($user->id, $user);
+        }
+        return null;}
+
+        public function addMonthsToUserExperience(User $user, int $months)
+    {
+        if (! $user) {
+            return false;
+        }
+        $userMonths = (int) $user->experience_months;
+        $user->experience_months = $userMonths + $months;
+return $user->save();
+}
 }

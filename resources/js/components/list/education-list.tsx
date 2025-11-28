@@ -2,7 +2,7 @@ import React, { useState, useRef } from "react";
 import { router } from "@inertiajs/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheck, faTimes, faEye } from "@fortawesome/free-solid-svg-icons";
-import EducationCard from '@/components/card/education-card'; 
+import EducationCard from '@/components/card/education-card';
 
 interface Education {
     id: number;
@@ -76,14 +76,11 @@ export default function EducationList({ education, confirmConfig = {} }: { educa
     };
 
     const handleDetails = (id: number) => {
-        // zamiast przekierowania otwieramy modal z danymi z listy
         const edu = education.find(x => x.id === id) ?? null;
         if (edu) {
             openModalWith(edu);
         } else {
-            // fallback: jeśli nie ma danych w liście, możesz pobrać szczegóły przez API tutaj
-            // router.visit(`/employee/check-experience/${id}`) lub axios.get(...) itd.
-            router.visit((typeof route === 'function') ? route('moderator.employee.check-experience', id) : `/employee/check-experience/${id}`);
+             router.visit((typeof route === 'function') ? route('moderator.employee.check-experience', id) : `/employee/check-experience/${id}`);
         }
     };
 
@@ -146,7 +143,6 @@ export default function EducationList({ education, confirmConfig = {} }: { educa
         router.post(verifyRoute, {}, {
             preserveScroll: true,
             onSuccess: () => {
-                // zamknij modal i odśwież listę
                 closeModal();
                 showNotification('Szkoła została potwierdzona.', 'success');
                 router.reload();

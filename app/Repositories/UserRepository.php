@@ -29,4 +29,15 @@ class UserRepository implements UserRepositoryInterface
         $user = User::find($userId);
         return $user ? $user->education_levels : null;
     }
+    public function addExperienceMonthsToUser(int $userId, int $months): bool
+    {
+        $user = User::find($userId);
+        if (! $user) {
+            return false;
+        }
+
+        $currentMonths = (int) $user->experience_months;
+        $user->experience_months = $currentMonths + $months;
+return $user->save();
+    }
 }

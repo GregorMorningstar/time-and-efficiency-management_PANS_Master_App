@@ -16,17 +16,14 @@ class EducationRepository implements EducationRepositoryInterface
     public function __construct(
         private readonly Educations $model,
     ) {}
-
     public function getAllEducationsByUserIdPaginated($userId, $perPage): LengthAwarePaginator
     {
         return $this->model->where('user_id', $userId)->paginate($perPage);
     }
-
     public function createEducation(array $data): Educations
     {
         return $this->model->create($data);
     }
-
     public function deleteEducationById(int $id): bool
     {
         $education = Educations::find($id);
@@ -40,17 +37,14 @@ class EducationRepository implements EducationRepositoryInterface
 
         return (bool) $education->delete();
     }
-
     public function getEducationById(int $id): ?Educations
     {
         return $this->model->find($id);
     }
-
     public function getAllEducationByUserId(int $userId): array
     {
         return $this->model->where('user_id', $userId)->get()->toArray();
     }
-
     public function getUnverifiedEducations(): Collection
     {
         return $this->model
@@ -58,5 +52,9 @@ class EducationRepository implements EducationRepositoryInterface
             ->with('user:id,name,email')
             ->orderBy('created_at', 'desc')
             ->get();
+    }
+    public function getAllUnconfirmedExperiences() : array
+    {
+        return $this->model->where('verified', false)->get()->toArray();
     }
 }
