@@ -88,23 +88,25 @@ export default function EducationListCard({ education, onEdit, onDelete, levelLa
                             </button>
                         )}
 
-                        <button
-                            type="button"
-                            onClick={() => onEdit?.(id)}
-                            className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
-                        >
-                            Edytuj
-                        </button>
+                        {verified !== true && (
+                            <>
+                                <button
+                                    type="button"
+                                    onClick={() => onEdit?.(id)}
+                                    className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
+                                >
+                                    Edytuj
+                                </button>
 
-                        <button
-                            type="button"
-                            onClick={() => {
-                                                                onDelete?.(id);
-                            }}
-                            className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
-                        >
-                            Usuń
-                        </button>
+                                <button
+                                    type="button"
+                                    onClick={() => onDelete?.(id)}
+                                    className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
+                                >
+                                    Usuń
+                                </button>
+                            </>
+                        )}
                     </div>
 
                     {diplomaPath && showPreview && (

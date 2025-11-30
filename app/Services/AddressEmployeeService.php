@@ -3,48 +3,57 @@
 namespace App\Services;
 
 use App\Interfaces\AddressEmployeeRepositoryInterface;
+use App\Interfaces\UserRepositoryInterface;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\File;
 
 class AddressEmployeeService
 {
-    protected $repo;
+    public function __construct(
+        private readonly AddressEmployeeRepositoryInterface $adressRepo,
+        private readonly UserRepositoryInterface $userRepo
+    ) {}
 
-    public function __construct(AddressEmployeeRepositoryInterface $repo)
+    public function getEmployeeAddresses()
     {
-        $this->repo = $repo;
+        // szukamy po user_id
+        return $this->adressRepo->findByUserId(auth()->id());
     }
 
-    public function getAll()
+    /**
+     * @param int $userId
+     * @param array $data  - zwalidowane pola (bez pliku)
+     * @param UploadedFile|null $file
+     * @return mixed created AddressEmployee model
+     */
+    public function createAddress(int $userId, array $data, ?UploadedFile $file = null)
     {
-        return $this->repo->all();
-    }
+        if ($file instanceof UploadedFile) {
+            $dir = public_path('image/id_scan');
+            if (! File::exists($dir)) {
+                File::makeDirectory($dir, 0755, true);
+            }
 
-    public function getById($id)
-    {
-        return $this->repo->find($id);
-    }
+            $base = Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME));
+            $ext  = $file->getClientOriginalExtension() ?: 'bin';
+            $filename = 'id_scan_' . uniqid() . '_' . $base . '.' . $ext;
 
-    public function getByUserId($userId)
-    {
-        return $this->repo->findByUserId($userId);
-    }
+            $file->move($dir, $filename);
 
-    public function create(array $data)
-    {
-        return $this->repo->create($data);
-    }
+            $data['id_card_scan'] = 'image/id_scan/' . $filename;
+        }
 
-    public function update($id, array $data)
-    {
-        return $this->repo->update($id, $data);
-    }
+        $data['user_id'] = $userId;
 
-    public function delete($id)
-    {
-        return $this->repo->delete($id);
-    }
+        $address = $this->adressRepo->create($data);
 
-    public function search(array $criteria)
-    {
-        return $this->repo->search($criteria);
+        $user = $this->userRepo->find($userId);
+        if ($user) {
+            $user->address_completed = true;
+            $user->save();
+        }
+
+        return $address;
     }
 }

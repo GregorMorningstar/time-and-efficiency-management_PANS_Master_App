@@ -6,8 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class AddressEmployee extends Model
 {
+    protected $table = 'address_employees';
 
-protected $table = 'address_employees';
+    // tabela bez timestamps w migracji => wyłącz automatyczne timestampy
+    public $timestamps = false;
 
     protected $fillable = [
         'user_id',
@@ -18,7 +20,6 @@ protected $table = 'address_employees';
         'zip_code',
         'country',
         'phone_number',
-
         'rodo_accept',
         'address_type',
         'id_card_number',
@@ -30,6 +31,4 @@ protected $table = 'address_employees';
     {
         return $this->belongsTo(User::class);
     }
-
-
 }

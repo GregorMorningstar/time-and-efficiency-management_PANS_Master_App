@@ -36,7 +36,6 @@ export default function CareerCard({ experience }: CareerCardProps) {
   const detailsHref = `/employee/career/${experience.id}`;
   const editHref = `/employee/career/${experience.id}/edit`;
 
-  // Coerce verified from DB (bool/0/1/'0'/'1')
   const v = (experience as any).verified;
   const verified = v === true || v === 1 || v === '1' ? true : (v === false || v === 0 || v === '0' ? false : undefined);
 
@@ -48,15 +47,10 @@ export default function CareerCard({ experience }: CareerCardProps) {
       return;
     }
 
-    // fallback POST to delete endpoint
     router.post('/employee/career/delete', { id: experience.id });
   }
 
   const employmentRange = `${experience.start_date} — ${experience.is_current ? 'W trakcie' : (experience.end_date ?? '—')}`;
-
-    function onDelete(event: React.MouseEvent<HTMLButtonElement>): void {
-        throw new Error('Function not implemented.');
-    }
 
   return (
     <>
@@ -154,20 +148,24 @@ export default function CareerCard({ experience }: CareerCardProps) {
               Szczegóły
             </button>
 
-            <Link
-              href={editHref}
-              className="rounded-md border px-2 py-1 text-sm bg-white text-emerald-700 hover:bg-emerald-50"
-            >
-              Edytuj
-            </Link>
+            {!verified && (
+              <>
+                <Link
+                  href={editHref}
+                  className="rounded-md border px-2 py-1 text-sm bg-white text-emerald-700 hover:bg-emerald-50"
+                >
+                  Edytuj
+                </Link>
 
-            <button
-              type="button"
-              onClick={handleDelete}
-              className="rounded-md border px-2 py-1 text-sm bg-red-50 text-red-600 hover:bg-red-100"
-            >
-              Usuń
-            </button>
+                <button
+                  type="button"
+                  onClick={handleDelete}
+                  className="rounded-md border px-2 py-1 text-sm bg-red-50 text-red-600 hover:bg-red-100"
+                >
+                  Usuń
+                </button>
+              </>
+            )}
           </div>
 
         </div>
@@ -214,8 +212,24 @@ export default function CareerCard({ experience }: CareerCardProps) {
               </div>
 
               {/* optional: barcode / nip */}
-              <div className="text-sm text-slate-500 mb-1">Numer</div>
-              <div className="font-mono text-slate-700">{experience.barcode ?? '—'}</div>
+              {experience.barcode && (
+                <>
+                  <div className="bg-white p-2 rounded shadow-sm">
+                    <Barcode
+                      value={experience.barcode}
+                      displayValue={false}
+                      height={48}
+                      margin={0}
+                      background="white"
+                      lineColor="#000"
+                    />
+                  </div>
+
+                  <div className="mt-2 text-sm text-slate-700 font-mono">
+                    {experience.barcode}
+                  </div>
+                </>
+              )}
             </div>
 
             <div className="mt-6 flex justify-end">

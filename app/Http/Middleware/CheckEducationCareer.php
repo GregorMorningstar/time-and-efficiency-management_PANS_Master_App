@@ -86,6 +86,12 @@ class CheckEducationCareer
 
                 //maszyny
                 'employee.machines.index',
+
+                //address
+'employee.address.index',
+'employee.address.add',
+'employee.address.store',
+
             ];
 
             $currentName = $request->route()?->getName();

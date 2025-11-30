@@ -29,8 +29,5 @@ class EmployeeController extends Controller
         return Inertia::render('employee/career');
     }
 
-    public function address()
-    {
-        return Inertia::render('employee/address');
-    }
+   
 }

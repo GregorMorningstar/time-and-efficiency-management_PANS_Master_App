@@ -1,6 +1,6 @@
 import ModeratorLayout from "../moderator-layout";
 import ModeratorTopNavMachines from "@/components/app-topnav-moderator-machines";
-import ListMachines from "@/components/card/machines-list";
+import ListMachines from "@/components/list/machines-list";
 type Props = {
   machines?: any[] | { data?: any[] };
 };

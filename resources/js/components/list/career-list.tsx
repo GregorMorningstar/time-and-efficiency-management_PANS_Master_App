@@ -189,26 +189,30 @@ export default function CareerList({ career, confirmConfig = {} }: { career: Car
                                     <td className="px-4 py-2 text-sm">{c.position ?? "—"}</td>
                                     <td className="px-4 py-2 text-sm">{c.start_date ? new Date(c.start_date).toLocaleDateString() : "—"}</td>
                                     <td className="px-4 py-2 text-sm">{c.end_date ? new Date(c.end_date).toLocaleDateString() : "—"}</td>
-                  
+
 
                                     <td className="px-4 py-2 text-sm">
-                                        <button
-                                            type="button"
-                                            onClick={() => handleVerify(c.id)}
-                                            className="text-emerald-600 hover:text-emerald-800 mr-2"
-                                            disabled={isLoading}
-                                        >
-                                            <FontAwesomeIcon icon={faCheck} className="w-5 h-5" />
-                                        </button>
+                                        {!verified && (
+                                            <>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleVerify(c.id)}
+                                                    className="text-emerald-600 hover:text-emerald-800 mr-2"
+                                                    disabled={isLoading}
+                                                >
+                                                    <FontAwesomeIcon icon={faCheck} className="w-5 h-5" />
+                                                </button>
 
-                                        <button
-                                            type="button"
-                                            onClick={() => handleReject(c.id)}
-                                            className="text-red-600 hover:text-red-800 mr-2"
-                                            disabled={isLoading}
-                                        >
-                                            <FontAwesomeIcon icon={faTimes} className="w-5 h-5" />
-                                        </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleReject(c.id)}
+                                                    className="text-red-600 hover:text-red-800 mr-2"
+                                                    disabled={isLoading}
+                                                >
+                                                    <FontAwesomeIcon icon={faTimes} className="w-5 h-5" />
+                                                </button>
+                                            </>
+                                        )}
 
                                         <button
                                             title="Szczegóły"
@@ -237,20 +241,25 @@ export default function CareerList({ career, confirmConfig = {} }: { career: Car
                             <div className="flex items-center justify-between px-4 py-2 border-b">
                                 <h3 className="text-lg font-medium">Szczegóły świadectwa pracy</h3>
                                 <div className="flex items-center gap-2">
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            if (!selected) return;
-                                            const confirmed = window.confirm('Potwierdzić świadectwo pracy?');
-                                            if (!confirmed) return;
-                                            handleVerify(selected.id);
-                                            closeModal();
-                                        }}
-                                        disabled={Boolean(selected && loadingIds[selected.id])}
-                                        className="inline-flex items-center rounded-md bg-emerald-600 text-white px-3 py-1 text-sm hover:bg-emerald-700 disabled:opacity-60"
-                                    >
-                                        Potwierdź
-                                    </button>
+                                    {selected && !Boolean(Number(selected.verified || 0)) ? (
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                if (!selected) return;
+                                                const confirmed = window.confirm('Potwierdzić świadectwo pracy?');
+                                                if (!confirmed) return;
+                                                handleVerify(selected.id);
+                                                closeModal();
+                                            }}
+                                            disabled={Boolean(selected && loadingIds[selected.id])}
+                                            className="inline-flex items-center rounded-md bg-emerald-600 text-white px-3 py-1 text-sm hover:bg-emerald-700 disabled:opacity-60"
+                                        >
+                                            Potwierdź
+                                        </button>
+                                    ) : (
+                                        <span className="inline-flex items-center rounded-md bg-emerald-50 text-emerald-700 px-3 py-1 text-sm">Zweryfikowane</span>
+                                    )}
+
                                     <button onClick={closeModal} className="text-slate-600 hover:text-slate-800 px-2">Zamknij</button>
                                 </div>
                             </div>

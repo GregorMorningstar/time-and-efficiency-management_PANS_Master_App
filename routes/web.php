@@ -4,6 +4,7 @@ use Inertia\Inertia;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AddressEmployeeController;
 use App\Http\Controllers\EducationController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\ModeratorController;
@@ -53,7 +54,6 @@ Route::middleware(['auth','verified','role:moderator'])->prefix('/moderator')->g
 
     //employee routes
 Route::get('/employee', [ModeratorController::class, 'employeeIndex'])->name('moderator.employee.index');
-
 //employee education verification
 Route::get('/employee/check-education', [ModeratorController::class, 'checkEducation'])->name('moderator.employee.check-education');
 Route::get('/employee/check-experience/{id}', [ModeratorController::class, 'lookExperienceById'])->name('moderator.employee.check-experience');
@@ -88,9 +88,9 @@ Route::middleware(['auth','verified','role:employee','flags'])->prefix('/employe
     Route::get('/career/{id}/edit', [CareerController::class, 'edit'])->name('employee.career.edit');
     Route::put('/career/{id}', [CareerController::class, 'update'])->name('employee.career.update');
     //address routes
-    Route::get('/address', [EmployeeController::class, 'address'])->name('employee.address');
-
-
+    Route::get('/address', [AddressEmployeeController::class, 'index'])->name('employee.address.index');
+    Route::get('/address/add', [AddressEmployeeController::class, 'create'])->name('employee.address.add');
+    Route::post('/address', [AddressEmployeeController::class, 'store'])->name('employee.address.store');
     //calendar routes
     Route::get('/calendar', [VacationCalendarController::class, 'index'])->name('employee.calendar');
     Route::post('/calendar', [VacationCalendarController::class, 'store'])->name('employee.calendar.store');

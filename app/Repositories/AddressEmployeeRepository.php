@@ -7,41 +7,47 @@ use App\Interfaces\AddressEmployeeRepositoryInterface;
 
 class AddressEmployeeRepository implements AddressEmployeeRepositoryInterface
 {
+    public function __construct(private readonly AddressEmployee $adressModel) {}
+
     public function all()
     {
-        return AddressEmployee::with('user')->get();
+        return $this->adressModel->with('user')->get();
     }
 
     public function find($id)
     {
-        return AddressEmployee::with('user')->find($id);
+        return $this->adressModel->with('user')->find($id);
     }
 
     public function findByUserId($userId)
     {
-        return AddressEmployee::with('user')->where('user_id', $userId)->first();
+        return $this->adressModel->with('user')->where('user_id', $userId)->first();
     }
 
     public function create(array $data)
     {
-        return AddressEmployee::create($data);
+        return $this->adressModel->create($data);
     }
 
     public function update($id, array $data)
     {
-        $address = AddressEmployee::findOrFail($id);
+        $address = $this->adressModel->findOrFail($id);
         $address->update($data);
         return $address;
     }
 
     public function delete($id)
     {
-        return AddressEmployee::destroy($id);
+        $address = $this->adressModel->find($id);
+        if (! $address) {
+            return false;
+        }
+        return $address->delete();
     }
 
     public function search(array $criteria)
     {
-        $query = AddressEmployee::with('user');
+        $query = $this->adressModel->with('user');
         foreach ($criteria as $key => $value) {
             $query->where($key, 'like', "%$value%");
         }

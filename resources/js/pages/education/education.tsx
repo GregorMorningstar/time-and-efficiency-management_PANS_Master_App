@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Head, usePage, router } from '@inertiajs/react';
 import EmployeeLayout from '../employee/employee-layout';
-import EducationListCard from '../../components/card/education-list-card';
+import EducationListCard from '../../components/list/education-list-card';
 
 
 import Barcode from 'react-barcode';

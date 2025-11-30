@@ -15,6 +15,8 @@ use App\Repositories\MachinesRepository;
 use App\Interfaces\MachinesRepositoryInterface;
 use App\Repositories\UserRepository;
 use App\Interfaces\UserRepositoryInterface;
+use App\Repositories\AddressEmployeeRepository;
+use App\Interfaces\AddressEmployeeRepositoryInterface;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -55,6 +57,11 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(
            UserRepositoryInterface::class,
             UserRepository::class
+        );
+        //adress employee repository binding
+        $this->app->bind(
+            AddressEmployeeRepositoryInterface::class,
+            AddressEmployeeRepository::class
         );
     }
 

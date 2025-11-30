@@ -69,6 +69,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(Machine::class);
     }
+    public function addressEmployee()
+    {
+        return $this->hasMany(AddressEmployee::class);
+    }
     //function
 
 
