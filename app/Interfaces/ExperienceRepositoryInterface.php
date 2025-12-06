@@ -14,7 +14,7 @@ interface ExperienceRepositoryInterface
     public function findById(int $id);
     public function findByIdWithUser(int $id): ?Experiences;
     public function getAllUnconfirmedExperiences() : array;
-    
+
 
     /**
      * Zwraca rekord doświadczenia i obliczoną liczbę miesięcy (bez zapisu do DB).
@@ -22,5 +22,5 @@ interface ExperienceRepositoryInterface
      */
     public function confirmExperience(int $id): array;
 
-
+    public function pendingCertificatesPaginated(int $perPage = 5): LengthAwarePaginator;
 }

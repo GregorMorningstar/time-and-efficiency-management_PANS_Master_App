@@ -164,7 +164,7 @@ class ExperienceService
     /**
      * Zwraca wynik działania: ['success' => bool, 'months' => int, 'experience' => ?Experiences]
      */
-    public function confirmExperience(int $id): \Illuminate\Http\RedirectResponse
+    public function confirmExperience(int $id, int $userId): \Illuminate\Http\RedirectResponse
     {
         $preview = $this->repo->confirmExperience($id);
 
@@ -172,10 +172,17 @@ class ExperienceService
         $experience ['verified'] = true;
         $experience->save();
         $user = $this->userService->addMonthsToUserExperience($experience->user, (int) ($preview['months'] ?? 0));
-  return redirect()->back()->with('success', 'Doświadczenie zostało zweryfikowane.');
-        }
-
-
+        $this->userService->urlaubCheckLimit($userId);
+        return redirect()->back()->with('success', 'Doświadczenie zostało zweryfikowane.');
     }
+
+    /**
+     * Zwraca paginowane niezweryfikowane świadectwa pracy
+     */
+    public function getPendingCertificatesPaginated(int $perPage = 5): LengthAwarePaginator
+    {
+        return $this->repo->pendingCertificatesPaginated($perPage);
+    }
+}
 
 

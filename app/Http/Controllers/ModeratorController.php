@@ -21,22 +21,24 @@ class ModeratorController extends Controller
 public function index()
 {
 
-
+// moderator panel
 return Inertia::render('moderator/index', [
 ]);
 }
+//empayee panel
 public function employeeIndex()
 {
 
-
+    $employees = $this->userService->getAllUsersPaginate(20);
+    //dd($employees);
     return Inertia::render('moderator/employee/index', [
+        'employees' => $employees,
     ]);
 }
-public function checkEducation()
+public function checkEducation(Request $request)
 {
+    $education = $this->educationService->getUnverifiedEducationsPaginated(5);
 
-    $education = $this->educationService->getAllUserWithNoCheckEducation();
-  //  dd($check);
     return Inertia::render('moderator/employee/check-education', [
         'education' => $education,
     ]);
@@ -51,20 +53,49 @@ return $education;
 }
 public function verifyEducation(int $educationId)
 {
+    $userId = $this->educationService->findEducation($educationId)->user_id;
 
-   return $this->userService->verifyEducation($educationId);
+   return $this->userService->verifyEducation($educationId, $userId);
 }
-public function checkCareer()
-{ $allUncheckedExperiences = $this->experienceService->getAllUnconfirmedExperiences();
+
+public function rejectEducation(int $educationId)
+{
+    return $this->userService->rejectEducation($educationId);
+}
+
+public function deleteEducation(int $educationId)
+{
+    return $this->userService->deleteEducation($educationId);
+}
+
+public function checkCareer(Request $request)
+{
+    $experiences = $this->experienceService->getPendingCertificatesPaginated(5);
 
     return Inertia::render('moderator/employee/check-career', [
-        'experiences' => $allUncheckedExperiences,
+        'experiences' => $experiences,
     ]);
 }
 
 public function verifyExperience(int $experienceId)
 {
+$userID = $this->experienceService->findExperience($experienceId)->user_id;
 
-   return $this->experienceService->confirmExperience($experienceId);
+   return $this->experienceService->confirmExperience($experienceId, $userID); ;
+}
+
+public function rejectExperience(int $experienceId)
+{
+    return $this->userService->rejectExperience($experienceId);
+}
+
+public function deleteExperience(int $experienceId)
+{
+    return $this->userService->deleteExperience($experienceId);
+}
+public function urlaubCheckLimit(int $id)
+{
+
+   return $this->userService->urlaubCheckLimit($id);
 }
 }

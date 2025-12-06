@@ -37,6 +37,25 @@ class EducationRepository implements EducationRepositoryInterface
 
         return (bool) $education->delete();
     }
+
+    public function deleteEducationForUser(int $id, int $userId): bool
+    {
+        $education = $this->model->where('id', $id)->where('user_id', $userId)->first();
+        if (! $education) {
+            return false;
+        }
+
+        // Usuń plik dyplomu z public/image/dyploms jeśli istnieje
+        if (! empty($education->diploma_path)) {
+            $fullPath = public_path($education->diploma_path);
+            if (is_file($fullPath)) {
+                @unlink($fullPath);
+            }
+        }
+
+        return (bool) $education->delete();
+    }
+
     public function getEducationById(int $id): ?Educations
     {
         return $this->model->find($id);
@@ -53,6 +72,17 @@ class EducationRepository implements EducationRepositoryInterface
             ->orderBy('created_at', 'desc')
             ->get();
     }
+
+    public function getUnverifiedEducationsPaginated(int $perPage = 5): LengthAwarePaginator
+    {
+        return $this->model
+            ->where('verified', false)
+            ->with('user:id,name,email,barcode')
+            ->orderBy('created_at', 'desc')
+            ->paginate($perPage)
+            ->withQueryString();
+    }
+
     public function getAllUnconfirmedExperiences() : array
     {
         return $this->model->where('verified', false)->get()->toArray();

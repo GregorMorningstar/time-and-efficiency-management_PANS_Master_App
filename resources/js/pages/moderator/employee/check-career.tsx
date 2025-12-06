@@ -7,7 +7,20 @@ import CareerList from "@/components/list/career-list";
 
 export default function ModeratorEmployeeCheckCareerPage() {
     const { props } = usePage<any>();
-    const experiences = props.experiences ?? [];
+    // Laravel paginator zwraca płaską strukturę: { data: [], links: [], current_page, last_page, ... }
+    const experiencesData = props.experiences ?? { data: [], links: [] };
+    const experiences = experiencesData.data ?? [];
+    const pagination = {
+        meta: {
+            current_page: experiencesData.current_page,
+            last_page: experiencesData.last_page,
+            per_page: experiencesData.per_page,
+            total: experiencesData.total,
+            from: experiencesData.from,
+            to: experiencesData.to,
+        },
+        links: experiencesData.links ?? []
+    };
 
     // flash messages / errors
     const flash = props.flash ?? {};
@@ -49,7 +62,7 @@ export default function ModeratorEmployeeCheckCareerPage() {
              </div>
 
              <ModeratorEmployeTopNav />
-             <CareerList career={experiences} />
+             <CareerList career={experiences} pagination={pagination} />
          </ModeratorLayout>
        </>
     );

@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use App\Models\Educations;
@@ -36,7 +38,9 @@ class EducationController extends Controller
                 ->get()
                 ->map(fn($r) => ['value' => $r->id, 'label' => $r->name])
                 ->toArray();
+
         }
+      
 //dd($maxEducationLevel);
         return Inertia::render('education/education', [
             'educations'      => $educations,
@@ -107,6 +111,7 @@ class EducationController extends Controller
 
         $this->service->createEducation($request->user(), $validated, $request->file('diploma'));
 
+        // Przy dodaniu edukacji przez employee tylko ustawiamy flagę completed na true
         if (! $request->user()->education_completed) {
             $request->user()->forceFill(['education_completed' => true])->save();
         }
@@ -114,29 +119,46 @@ class EducationController extends Controller
         return redirect()->route('employee.education')->with('success', 'Szkoła dodana.');
     }
 
-   public function destroy(Request $request)
-{
+   public function destroy(Request $request, int $id)
+    {
+        $user = Auth::user();
 
-    $user = Auth::user();
-    $id = (int) $request->input('id');
-    if (! $id) {
-        return response()->json(['error' => 'Brak ID wpisu do usunięcia.'], 422);
+        $deleted = $this->service->deleteEducationForUser($id, $user->id);
+
+        if (! $deleted) {
+            return redirect()->back()->with('error', 'Nie znaleziono wpisu lub brak uprawnień.');
+        }
+
+        // Przy usunięciu synchronizuj tylko flagę education_completed (nie lata - te aktualizuje moderator)
+        $this->flagsService->syncUserEducationFlag($user->id);
+
+        return redirect()->back()->with('success', 'Wpis edukacji usunięty.');
     }
 
-    $education = Educations::where('id', $id)->where('user_id', $user->id)->first();
+    /**
+     * Usuń edukację przez POST z body { id }
+     */
+    public function destroyViaPost(Request $request)
+    {
+        $id = (int) $request->input('id', 0);
+        $user = Auth::user();
 
-    if (! $education) {
-        return response()->json(['error' => 'Nie znaleziono wpisu lub brak uprawnień.'], 404);
+        if (! $id) {
+            return redirect()->back()->with('error', 'Brak ID wpisu do usunięcia.');
+        }
+
+        $deleted = $this->service->deleteEducationForUser($id, $user->id);
+
+        if (! $deleted) {
+            return redirect()->back()->with('error', 'Nie znaleziono wpisu lub brak uprawnień.');
+        }
+
+        // Przy usunięciu synchronizuj tylko flagę education_completed (nie lata - te aktualizuje moderator)
+        $this->flagsService->syncUserEducationFlag($user->id);
+
+        return redirect()->route('employee.education')->with('success', 'Wpis edukacji usunięty.');
     }
 
-    try {
-        $education->delete();
-    $flagsEducationCount = $this->flagsService->syncUserEducationFlag();
-        return redirect()->route('employee.education')->with('success', 'Szkoła zostala usunieta.');
-    } catch (\Throwable $e) {
-        return response()->json(['error' => 'Błąd podczas usuwania wpisu.' . $e->getMessage()], 500);
-    }
-}
 public function create()
 {
     return Inertia::render('education/add-education', [
@@ -226,10 +248,13 @@ public function update(Request $request, $id)
     if (! $request->user()->education_completed) {
         $request->user()->forceFill(['education_completed' => true])->save();
     }
-    $this->flagsService->syncUserEducationFlag();
+
+    // Przy edycji przez employee tylko synchronizuj flagę completed (nie lata)
+    $this->flagsService->syncUserEducationFlag($user->id);
 
     return redirect()->route('employee.education')->with('success', 'Edukacja zaktualizowana.');
 
 
 }
+
 }

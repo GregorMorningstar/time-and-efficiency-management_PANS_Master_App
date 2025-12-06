@@ -23,16 +23,16 @@ return new class extends Migration
             $table->enum('role', array_map(fn ($r) => $r->value, UserRole::cases()))
                   ->default(UserRole::EMPLOYEE->value)
                   ->index();
-            $table->string('barcode')->unique()->nullable()->length(13);
-            $table->boolean('education_completed')->default(false)->index();
-            $table->boolean('experience_completed')->default(false)->index();
-            $table->boolean('address_completed')->default(false)->index();
+            $table->string('barcode')->unique()->nullable()->length(13);//EAN-13 barcode
+            $table->boolean('education_completed')->default(false)->index();//czy uzupełniono dane edukacyjne
+            $table->boolean('experience_completed')->default(false)->index();//czy uzupełniono dane doświadczenia
+            $table->boolean('address_completed')->default(false)->index();//czy uzupełniono dane adresowe
 
             //urlop
-            $table->integer('annual_leave_entitlement')->default(20);
-            $table->integer('leave_balance')->default(20);
-            $table->integer('leave_used')->default(0);
-            $table->integer('carryover_leave')->default(0);
+            $table->integer('annual_leave_entitlement')->default(20);//roczne uprawnienie do urlopu 20 lub 26 dni
+            $table->integer('leave_balance')->default(20);//saldo urlopu
+            $table->integer('leave_used')->default(0);//zużyte dni urlopu
+            $table->integer('carryover_leave')->default(0);//przeniesiony urlop z poprzedniego roku
             $table->timestamp('email_verified_at')->nullable();
 
             $table->integer('experience_months')->default(0); //months of experience

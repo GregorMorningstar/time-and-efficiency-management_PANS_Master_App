@@ -58,9 +58,18 @@ Route::get('/employee', [ModeratorController::class, 'employeeIndex'])->name('mo
 Route::get('/employee/check-education', [ModeratorController::class, 'checkEducation'])->name('moderator.employee.check-education');
 Route::get('/employee/check-experience/{id}', [ModeratorController::class, 'lookExperienceById'])->name('moderator.employee.check-experience');
 Route::post('/education/{id}/verify', [ModeratorController::class, 'verifyEducation'])->name('moderator.education.verify');
+Route::post('/education/{id}/reject', [ModeratorController::class, 'rejectEducation'])->name('moderator.education.reject');
+Route::delete('/education/{id}', [ModeratorController::class, 'deleteEducation'])->name('moderator.education.delete');
+
+
 //career experience verification
 Route::get('/employee/check-all-career', [ModeratorController::class, 'checkCareer'])->name('moderator.employee.check-career');
 Route::post('/experience/{id}/verify', [ModeratorController::class, 'verifyExperience'])->name('moderator.experience.verify');
+Route::post('/experience/{id}/reject', [ModeratorController::class, 'rejectExperience'])->name('moderator.experience.reject');
+Route::delete('/experience/{id}', [ModeratorController::class, 'deleteExperience'])->name('moderator.experience.delete');
+
+ //urlaub routes
+    Route::get('/urlaub/check-limit/{id}' , [ModeratorController::class, 'urlaubCheckLimit'])->name('employee.urlaub.check.index');
 });
 
 
@@ -75,9 +84,9 @@ Route::middleware(['auth','verified','role:employee','flags'])->prefix('/employe
     Route::post('/education', [EducationController::class, 'store'])->name('employee.education.store');
     Route::get('/education/{id}/edit', [EducationController::class, 'edit'])->name('employee.education.edit');
     Route::put('/education/{id}', [EducationController::class, 'update'])->name('employee.education.update');
-
-   //career routes
-
+    Route::post('/education/delete', [EducationController::class, 'destroyViaPost'])->name('employee.education.delete.post');
+    Route::delete('/education/{id}', [EducationController::class, 'destroy'])->name('employee.education.delete');
+    //career routes
     Route::get('/api/company/lookup', [CareerController::class, 'lookup'])->name('api.company.lookup');
     Route::get('/career', [CareerController::class, 'index'])->name('employee.career');
     Route::post('/career', [CareerController::class, 'store'])->name('employee.career.store');
@@ -98,6 +107,8 @@ Route::middleware(['auth','verified','role:employee','flags'])->prefix('/employe
 
     //maszyny routes
     Route::get('/machines', [MachinesController::class, 'index'])->name('employee.machines.index');
+
+
 
 
 });

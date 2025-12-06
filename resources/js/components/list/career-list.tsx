@@ -25,9 +25,35 @@ interface Career {
     updated_at?: string;
 }
 
-export default function CareerList({ career, confirmConfig = {} }: { career: Career[], confirmConfig?: { rejectMessage?: string } }) {
-    // pokaż tylko rekordy które mają skan świadectwa pracy
-    const visibleCareer = (career ?? []).filter(c => Boolean(c.work_certificate_scan_path));
+interface PaginationLink {
+    url: string | null;
+    label: string;
+    active: boolean;
+}
+interface PaginationMeta {
+    current_page?: number;
+    last_page?: number;
+    per_page?: number;
+    total?: number;
+    from?: number;
+    to?: number;
+}
+interface PaginationData {
+    links: PaginationLink[];
+    meta?: PaginationMeta;
+}
+
+export default function CareerList({
+    career,
+    confirmConfig = {},
+    pagination,
+}: {
+    career: Career[];
+    confirmConfig?: { rejectMessage?: string };
+    pagination?: PaginationData;
+}) {
+    // pokaż rekordy przekazane z serwera (bez dodatkowego filtrowania)
+    const visibleCareer = career ?? [];
     if (visibleCareer.length === 0) {
         return <p className="p-4 text-sm text-slate-600">Brak świadectw pracy do wyświetlenia.</p>;
     }
@@ -127,9 +153,37 @@ export default function CareerList({ career, confirmConfig = {} }: { career: Car
 
     const getImageUrl = (path?: string | null) => {
         if (!path) return placeholderImg;
-        // jeżeli ścieżka nie zaczyna się od http/https ani /, dodaj /storage/ (dostosuj jeśli potrzebne)
+        // jeżeli ścieżka zaczyna się od http/https ani /, dodaj /storage/ (dostosuj jeśli potrzebne)
         if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('/')) return path;
+        if (path.startsWith('image/')) return `/${path}`;
         return `/storage/${path}`;
+    };
+
+    const handlePaginate = (url: string | null) => {
+        if (!url) return;
+        // Inertia pełny URL z backendu => używamy router.visit
+        router.visit(url, { preserveState: true, preserveScroll: true });
+    };
+
+    const handleDelete = (id: number) => {
+        if (loadingIds[id]) return;
+        const confirmed = window.confirm('Czy na pewno usunąć to doświadczenie zawodowe?');
+        if (!confirmed) return;
+
+        setLoadingIds(prev => ({ ...prev, [id]: true }));
+
+        const deleteRoute = safeRoute('moderator.experience.delete', id, `/moderator/experience/${id}`);
+
+        router.delete(deleteRoute, {
+            preserveScroll: true,
+            onSuccess: () => {
+                showNotification('Doświadczenie usunięte.', 'success');
+            },
+            onError: () => {
+                showNotification('Błąd podczas usuwania.', 'error');
+            },
+            onFinish: () => setLoadingIds(prev => ({ ...prev, [id]: false })),
+        });
     };
 
     return (
@@ -190,7 +244,6 @@ export default function CareerList({ career, confirmConfig = {} }: { career: Car
                                     <td className="px-4 py-2 text-sm">{c.start_date ? new Date(c.start_date).toLocaleDateString() : "—"}</td>
                                     <td className="px-4 py-2 text-sm">{c.end_date ? new Date(c.end_date).toLocaleDateString() : "—"}</td>
 
-
                                     <td className="px-4 py-2 text-sm">
                                         {!verified && (
                                             <>
@@ -203,14 +256,7 @@ export default function CareerList({ career, confirmConfig = {} }: { career: Car
                                                     <FontAwesomeIcon icon={faCheck} className="w-5 h-5" />
                                                 </button>
 
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleReject(c.id)}
-                                                    className="text-red-600 hover:text-red-800 mr-2"
-                                                    disabled={isLoading}
-                                                >
-                                                    <FontAwesomeIcon icon={faTimes} className="w-5 h-5" />
-                                                </button>
+                                               
                                             </>
                                         )}
 
@@ -223,6 +269,16 @@ export default function CareerList({ career, confirmConfig = {} }: { career: Car
                                         >
                                             <FontAwesomeIcon icon={faEye} className="w-5 h-5" />
                                         </button>
+
+                                        <button
+                                            title="Usuń"
+                                            aria-label="Usuń"
+                                            className="ml-2 text-red-600 hover:text-red-800"
+                                            onClick={() => handleDelete(c.id)}
+                                            disabled={isLoading}
+                                        >
+                                            <FontAwesomeIcon icon={faTimes} className="w-5 h-5" />
+                                        </button>
                                     </td>
                                 </tr>
                             );
@@ -230,6 +286,44 @@ export default function CareerList({ career, confirmConfig = {} }: { career: Car
                     </tbody>
                 </table>
             </div>
+
+            {/* pagination info */}
+            {pagination?.meta && (
+                <div className="flex items-center justify-between mt-4">
+                    <div className="text-sm text-slate-600">
+                        {pagination.meta.from && pagination.meta.to && pagination.meta.total
+                            ? `Wyświetlane: ${pagination.meta.from}–${pagination.meta.to} z ${pagination.meta.total}`
+                            : `Strona ${pagination.meta.current_page ?? 1} z ${pagination.meta.last_page ?? 1}`}
+                    </div>
+
+                    {pagination.links && pagination.links.length > 0 && (
+                        <nav className="flex flex-wrap items-center gap-2">
+                            {pagination.links.map((link, idx) => {
+                                const label = String(link.label)
+                                    .replace(/&laquo;/g, '«')
+                                    .replace(/&raquo;/g, '»')
+                                    .replace(/&hellip;/g, '…');
+                                const isDisabled = !link.url;
+                                return (
+                                    <button
+                                        key={`${label}-${idx}`}
+                                        type="button"
+                                        onClick={() => handlePaginate(link.url)}
+                                        disabled={isDisabled || link.active}
+                                        className={`px-3 py-1 text-sm rounded border transition ${
+                                            link.active
+                                                ? 'bg-emerald-600 border-emerald-600 text-white'
+                                                : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-100'
+                                        } ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    >
+                                        <span dangerouslySetInnerHTML={{ __html: label }} />
+                                    </button>
+                                );
+                            })}
+                        </nav>
+                    )}
+                </div>
+            )}
 
             {/* Modal */}
             {isModalOpen && selected && (

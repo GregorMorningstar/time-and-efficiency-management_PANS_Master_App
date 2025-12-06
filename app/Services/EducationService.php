@@ -111,7 +111,46 @@ class EducationService
     {
         return $this->educationRepository->deleteEducation($id);
     }
-    public function findEducation(int $id): ?Educations
+
+    /**
+     * Usuwa edukację dla konkretnego użytkownika i aktualizuje flagi.
+     */
+    public function deleteEducationForUser(int $id, int $userId): bool
+    {
+        $deleted = $this->educationRepository->deleteEducationForUser($id, $userId);
+
+        if ($deleted) {
+            $this->ensureEducationCompletedFlag($userId);
+        }
+
+        return $deleted;
+    }
+
+    /**
+     * Zwraca najwyższy poziom edukacji w latach dla użytkownika (z zakończonych wpisów).
+     */
+    public function getHighestEducationYearsForUser(int $userId): int
+    {
+        $educations = $this->educationRepository->getAllEducationByUserId($userId);
+
+        $completedEducations = array_filter($educations, function ($edu) {
+            return empty($edu['is_current']) && !empty($edu['end_date']);
+        });
+
+        if (empty($completedEducations)) {
+            return 0;
+        }
+
+        $highestYears = 0;
+        foreach ($completedEducations as $edu) {
+            $years = \App\Enums\EducationsDegree::yearsFor($edu['level']);
+            if ($years > $highestYears) {
+                $highestYears = $years;
+            }
+        }
+
+        return $highestYears;
+    }    public function findEducation(int $id): ?Educations
     {
         return $this->educationRepository->getEducationById($id);
     }
@@ -172,6 +211,15 @@ class EducationService
     {
         return $this->educationRepository->getUnverifiedEducations();
     }
+
+    /**
+     * Zwraca paginowane niezweryfikowane edukacje
+     */
+    public function getUnverifiedEducationsPaginated(int $perPage = 5): LengthAwarePaginator
+    {
+        return $this->educationRepository->getUnverifiedEducationsPaginated($perPage);
+    }
+
    /**
      * Zwraca najwyższy poziom edukacji spośród zakończonych wpisów użytkownika.
      * Wynik: ['key' => string, 'years' => int, 'label' => string] lub null gdy brak.

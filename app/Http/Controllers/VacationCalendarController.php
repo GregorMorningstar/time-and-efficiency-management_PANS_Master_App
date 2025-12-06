@@ -11,7 +11,7 @@ use Illuminate\Validation\Rule;
 
 class VacationCalendarController extends Controller
 {
-    public function __construct(private VacationService $vacationService)
+    public function __construct(private readonly VacationService $vacationService, private readonly User $user)
     {
     }
 
@@ -115,4 +115,7 @@ class VacationCalendarController extends Controller
         ]);
     }
 
+    public function checkVacationLimit($userId) {
+            
+    }
 }

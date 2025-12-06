@@ -3,10 +3,11 @@ import { router } from "@inertiajs/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheck, faTimes, faEye } from "@fortawesome/free-solid-svg-icons";
 import EducationCard from '@/components/card/education-card';
+import Barcode from 'react-barcode';
 
 interface Education {
     id: number;
-    user?: { id: number; name: string; email?: string } | null;
+    user?: { id: number; name?: string; email?: string; barcode?: string } | null;
     school?: string;
     start_year?: string | number | null;
     end_year?: string | number | null;
@@ -15,7 +16,35 @@ interface Education {
     verified?: boolean | null;
 }
 
-export default function EducationList({ education, confirmConfig = {} }: { education: Education[], confirmConfig?: { rejectMessage?: string } }) {
+interface PaginationLink {
+    url: string | null;
+    label: string;
+    active: boolean;
+}
+
+interface PaginationMeta {
+    current_page?: number;
+    last_page?: number;
+    per_page?: number;
+    total?: number;
+    from?: number;
+    to?: number;
+}
+
+interface PaginationData {
+    links: PaginationLink[];
+    meta?: PaginationMeta;
+}
+
+export default function EducationList({
+    education,
+    confirmConfig = {},
+    pagination,
+}: {
+    education: Education[];
+    confirmConfig?: { rejectMessage?: string };
+    pagination?: PaginationData;
+}) {
     if (!education || education.length === 0) {
         return <p className="p-4 text-sm text-slate-600">Brak rekordów do wyświetlenia.</p>;
     }
@@ -45,7 +74,6 @@ export default function EducationList({ education, confirmConfig = {} }: { educa
     const notifTimer = useRef<number | null>(null);
 
     const showNotification = (message: string, type: 'success' | 'error' | 'info' = 'info', timeout = 5000) => {
-        // clear existing timer
         if (notifTimer.current) {
             clearTimeout(notifTimer.current);
             notifTimer.current = null;
@@ -87,19 +115,15 @@ export default function EducationList({ education, confirmConfig = {} }: { educa
     const handleVerify = (id: number) => {
         if (loadingIds[id]) return;
         setLoadingIds(prev => ({ ...prev, [id]: true }));
-        console.log('Verifying education id:', id);
+
         const verifyRoute = (typeof route === 'function')
             ? route('moderator.education.verify', id)
             : `/moderator/education/${id}/verify`;
 
         router.post(verifyRoute, {}, {
             preserveScroll: true,
-            onSuccess: () => {
-                showNotification('Szkoła została potwierdzona.', 'success');
-            },
-            onError: () => {
-                showNotification('Wystąpił błąd podczas potwierdzania.', 'error');
-            },
+            onSuccess: () => showNotification('Szkoła została potwierdzona.', 'success'),
+            onError: () => showNotification('Wystąpił błąd podczas potwierdzania.', 'error'),
             onFinish: () => setLoadingIds(prev => ({ ...prev, [id]: false })),
         });
     };
@@ -109,7 +133,6 @@ export default function EducationList({ education, confirmConfig = {} }: { educa
     const handleReject = (id: number) => {
         if (loadingIds[id]) return;
         const confirmed = window.confirm(defaultRejectMessage);
-        console.log('Rejecting education id:', id);
         if (!confirmed) return;
 
         setLoadingIds(prev => ({ ...prev, [id]: true }));
@@ -120,17 +143,12 @@ export default function EducationList({ education, confirmConfig = {} }: { educa
 
         router.post(rejectRoute, {}, {
             preserveScroll: true,
-            onSuccess: () => {
-                showNotification('Wpis został odrzucony.', 'success');
-            },
-            onError: () => {
-                showNotification('Wystąpił błąd podczas odrzucania.', 'error');
-            },
+            onSuccess: () => showNotification('Wpis został odrzucony.', 'success'),
+            onError: () => showNotification('Wystąpił błąd podczas odrzucania.', 'error'),
             onFinish: () => setLoadingIds(prev => ({ ...prev, [id]: false })),
         });
     };
 
-    // --- ADDED: verify from modal ---
     const handleVerifyModal = (id: number) => {
         if (loadingIds[id]) return;
         const confirmed = window.confirm('Potwierdzić szkołę?');
@@ -138,7 +156,9 @@ export default function EducationList({ education, confirmConfig = {} }: { educa
 
         setLoadingIds(prev => ({ ...prev, [id]: true }));
 
-        const verifyRoute = safeRoute('moderator.education.verify', id, `/moderator/education/${id}/verify`);
+        const verifyRoute = (typeof route === 'function')
+            ? route('moderator.education.verify', id)
+            : `/moderator/education/${id}/verify`;
 
         router.post(verifyRoute, {}, {
             preserveScroll: true,
@@ -147,9 +167,7 @@ export default function EducationList({ education, confirmConfig = {} }: { educa
                 showNotification('Szkoła została potwierdzona.', 'success');
                 router.reload();
             },
-            onError: () => {
-                showNotification('Wystąpił błąd podczas potwierdzania.', 'error');
-            },
+            onError: () => showNotification('Wystąpił błąd podczas potwierdzania.', 'error'),
             onFinish: () => setLoadingIds(prev => ({ ...prev, [id]: false })),
         });
     };
@@ -166,7 +184,35 @@ export default function EducationList({ education, confirmConfig = {} }: { educa
         return fallback ?? (id !== undefined ? `/${name.replace(/\./g, '/')}/${id}` : `/${name.replace(/\./g, '/')}`);
     };
 
-    const placeholderImg = '/images/diploma-placeholder.png'; // put a placeholder in public/images or change to a remote URL
+    const placeholderImg = '/images/diploma-placeholder.png';
+
+    const handlePaginate = (url: string | null) => {
+        if (!url) return;
+        router.visit(url, { preserveState: true, preserveScroll: true });
+    };
+
+    const handleDelete = (id: number) => {
+        if (loadingIds[id]) return;
+        const confirmed = window.confirm('Czy na pewno usunąć ten wpis edukacji?');
+        if (!confirmed) return;
+
+        setLoadingIds(prev => ({ ...prev, [id]: true }));
+
+        const deleteRoute = (typeof route === 'function')
+            ? route('moderator.education.delete', id)
+            : `/moderator/education/${id}`;
+
+        router.delete(deleteRoute, {
+            preserveScroll: true,
+            onSuccess: () => {
+                showNotification('Edukacja usunięta.', 'success');
+            },
+            onError: () => {
+                showNotification('Błąd podczas usuwania.', 'error');
+            },
+            onFinish: () => setLoadingIds(prev => ({ ...prev, [id]: false })),
+        });
+    };
 
     return (
         <div className="p-4">
@@ -179,12 +225,15 @@ export default function EducationList({ education, confirmConfig = {} }: { educa
                     </div>
                 </div>
             )}
+
             <h2 className="text-lg font-medium mb-3">Lista doświadczeń</h2>
+
             <div className="overflow-x-auto bg-white rounded border">
                 <table className="min-w-full divide-y">
                     <thead className="bg-slate-50">
                         <tr>
                             <th className="px-4 py-2 text-left text-sm font-medium">ID</th>
+                            <th className="px-4 py-2 text-left text-sm font-medium">Kod Kreskowy</th>
                             <th className="px-4 py-2 text-left text-sm font-medium">Użytkownik</th>
                             <th className="px-4 py-2 text-left text-sm font-medium">Szkoła / Instytucja</th>
                             <th className="px-4 py-2 text-left text-sm font-medium">Poziom</th>
@@ -198,19 +247,29 @@ export default function EducationList({ education, confirmConfig = {} }: { educa
                         {education.map((e) => {
                             const isLoading = Boolean(loadingIds[e.id]);
 
-                            const verifyRoute = safeRoute('moderator.education.verify', e.id, `/moderator/education/${e.id}/verify`);
-                            const rejectRoute = safeRoute('moderator.education.reject', e.id, `/moderator/education/${e.id}/reject`);
-
                             return (
                                 <tr key={e.id} className="hover:bg-slate-50">
                                     <td className="px-4 py-2 text-sm">{e.id}</td>
+                                    <td className="px-4 py-2 text-sm">
+                                        {(() => {
+                                            const bc = String(e.user?.barcode ?? '').trim();
+                                            if (!bc) return '—';
+                                            return (
+                                                <div className="flex flex-col items-start gap-1">
+                                                    <div className="overflow-hidden">
+                                                        <Barcode value={bc} format="CODE128" width={1} height={28} displayValue={false} />
+                                                    </div>
+                                                    <div className="text-xs text-slate-600 select-all">{bc}</div>
+                                                </div>
+                                            );
+                                        })()}
+                                    </td>
                                     <td className="px-4 py-2 text-sm">{e.user?.name ?? "—"}</td>
                                     <td className="px-4 py-2 text-sm">{e.school ?? "—"}</td>
                                     <td className="px-4 py-2 text-sm">{mapLevelToPolish(e.level)}</td>
                                     <td className="px-4 py-2 text-sm">{e.start_year ?? "—"}</td>
                                     <td className="px-4 py-2 text-sm">{e.end_year ?? "—"}</td>
                                     <td className="px-4 py-2 text-sm">{e.verified ? "Tak" : "Nie"}</td>
-
                                     <td className="px-4 py-2 text-sm">
                                         <button
                                             type="button"
@@ -221,14 +280,7 @@ export default function EducationList({ education, confirmConfig = {} }: { educa
                                             <FontAwesomeIcon icon={faCheck} className="w-5 h-5" />
                                         </button>
 
-                                        <button
-                                            type="button"
-                                            onClick={() => handleReject(e.id)}
-                                            className="text-red-600 hover:text-red-800 mr-2"
-                                            disabled={isLoading}
-                                        >
-                                            <FontAwesomeIcon icon={faTimes} className="w-5 h-5" />
-                                        </button>
+                                    
 
                                         <button
                                             title="Szczegóły"
@@ -239,6 +291,16 @@ export default function EducationList({ education, confirmConfig = {} }: { educa
                                         >
                                             <FontAwesomeIcon icon={faEye} className="w-5 h-5" />
                                         </button>
+
+                                        <button
+                                            title="Usuń"
+                                            aria-label="Usuń"
+                                            className="ml-2 text-red-600 hover:text-red-800"
+                                            onClick={() => handleDelete(e.id)}
+                                            disabled={isLoading}
+                                        >
+                                            <FontAwesomeIcon icon={faTimes} className="w-5 h-5" />
+                                        </button>
                                     </td>
                                 </tr>
                             );
@@ -246,6 +308,44 @@ export default function EducationList({ education, confirmConfig = {} }: { educa
                     </tbody>
                 </table>
             </div>
+
+            {/* Pagination controls */}
+            {pagination?.meta && (
+                <div className="flex items-center justify-between mt-4">
+                    <div className="text-sm text-slate-600">
+                        {pagination.meta.from && pagination.meta.to && pagination.meta.total
+                            ? `Wyświetlane: ${pagination.meta.from}–${pagination.meta.to} z ${pagination.meta.total}`
+                            : `Strona ${pagination.meta.current_page ?? 1} z ${pagination.meta.last_page ?? 1}`}
+                    </div>
+
+                    {pagination.links && pagination.links.length > 0 && (
+                        <nav className="flex flex-wrap items-center gap-2">
+                            {pagination.links.map((link, idx) => {
+                                const label = String(link.label)
+                                    .replace(/&laquo;/g, '«')
+                                    .replace(/&raquo;/g, '»')
+                                    .replace(/&hellip;/g, '…');
+                                const isDisabled = !link.url;
+                                return (
+                                    <button
+                                        key={`${label}-${idx}`}
+                                        type="button"
+                                        onClick={() => handlePaginate(link.url)}
+                                        disabled={isDisabled || link.active}
+                                        className={`px-3 py-1 text-sm rounded border transition ${
+                                            link.active
+                                                ? 'bg-emerald-600 border-emerald-600 text-white'
+                                                : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-100'
+                                        } ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    >
+                                        <span dangerouslySetInnerHTML={{ __html: label }} />
+                                    </button>
+                                );
+                            })}
+                        </nav>
+                    )}
+                </div>
+            )}
 
             {/* Modal - prosty overlay */}
             {isModalOpen && selectedEducation && (

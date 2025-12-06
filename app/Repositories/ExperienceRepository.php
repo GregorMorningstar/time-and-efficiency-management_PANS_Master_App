@@ -41,7 +41,7 @@ class ExperienceRepository implements ExperienceRepositoryInterface
             ->orderByDesc('id')
             ->get()
             ->toArray();
-
+//dd($items);
         return $items;
     }
     public function delete(int $id): bool
@@ -103,6 +103,21 @@ public function handleExperienceVerification(int $id): ?Experience
            // return $experience->save();
         }
         return false;
+    }
+    public function pendingCertificatesPaginated(int $perPage = 5): LengthAwarePaginator
+    {
+        return $this->model
+            ->newQuery()
+            ->with(['user:id,name,email,barcode'])
+            ->whereNotNull('end_date')
+            ->where(function ($q) {
+                $q->whereNull('verified')
+                  ->orWhere('verified', false)
+                  ->orWhere('verified', 0);
+            })
+            ->orderByDesc('created_at')
+            ->paginate($perPage)
+            ->withQueryString();
     }
 
 
