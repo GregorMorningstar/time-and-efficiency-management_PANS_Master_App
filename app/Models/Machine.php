@@ -51,4 +51,13 @@ class Machine extends Model
     {
         return $this->belongsTo(User::class);
     }
+    public function failureReports()
+    {
+        return $this->hasMany(FailureReport::class);
+    }
+
+     public function machineResponsibilities()
+    {
+        return $this->hasMany(MachineResponsibility::class);
+    }
 }

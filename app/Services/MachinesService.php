@@ -27,7 +27,6 @@ class MachinesService
     {
         return $this->machinesRepository->getAllMachinesByUserId($userId);
     }
-
     public function getAllMachinesPaginate()
     {
         return $this->machinesRepository->getAllMachinesPaginate();
@@ -37,7 +36,6 @@ class MachinesService
     {
         return $this->machinesRepository->getAllMachines();
     }
-
     public function store(array $data)
     {
         if (isset($data['image']) && $data['image'] instanceof UploadedFile) {
@@ -47,4 +45,7 @@ class MachinesService
 
         return $this->machinesRepository->store($data);
     }
+
+    //employee service methitod
+    
 }

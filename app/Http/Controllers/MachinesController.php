@@ -51,26 +51,29 @@ public function machineModeratorDashboard()
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'model' => 'required|string|max:255',
-            'year_of_production' => 'nullable|integer|min:1800|max:' . date('Y'),
-            'serial_number' => 'required|string|max:255',
+        $baseRules = [
+            'name' => 'required|string',
+            'model' => 'nullable|string',
+            'year_of_production' => 'nullable|numeric',
+            'serial_number' => 'nullable|string',
             'description' => 'nullable|string',
-            'working_hours' => 'nullable|integer|min:0|max:999999999',
-            'max_productions_per_hour' => 'nullable|integer|min:0|max:999999',
-            'department_id' => 'nullable|integer|exists:departments,id',
-            'image' => 'nullable|image|mimes:jpeg,png|max:15360', // size in KB -> 15 MB
-        ]);
+            'working_hours' => 'nullable|numeric',
+            'max_productions_per_hour' => 'nullable|numeric',
+            'department_id' => 'required|exists:departments,id',
+        ];
 
-        if ($request->hasFile('image')) {
-            $validated['image'] = $request->file('image');
+        $data = $request->validate($baseRules);
+
+        if ($request->hasFile('image') && $request->file('image')->isValid()) {
+            $request->validate([
+                'image' => 'file|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            ]);
+            $data['image_path'] = $request->file('image')->store('machines', 'public');
         }
-//dd($validated);
-        $this->machinesService->store($validated);
 
-        return redirect()->route('moderator.machines.dashboard')
-            ->with('success', 'Maszyna została dodana pomyślnie');
+        \App\Models\Machine::create($data);
+
+        return redirect()->route('moderator.machines.dashboard')->with('success', 'Machine added successfully. ');
     }
 
 

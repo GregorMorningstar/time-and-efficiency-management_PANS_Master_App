@@ -9,5 +9,7 @@ interface MachinesRepositoryInterface
  public function getAllMachines();
  public function getAllMachinesPaginate();
  public function store(array $data);
+ //employee interface method
+ public function getMachinesForEmployee($employeeId);
 
 }

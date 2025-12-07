@@ -34,4 +34,12 @@
     // „Przepływ informacji jest siłą napędową organizacji. Sposób gromadzenia, zarządzania i wykorzystywania informacji determinuje, czy przedsiębiorstwo odniesie sukces. Produkcja musi wiedzieć, jaki produkt sprzedaje się najlepiej, aby móc szybko zmieniać priorytety, a menedżerowie na wszystkich szczeblach muszą posiadać aktualne dane do podejmowania decyzji.”
     // — fragment inspirowany treściami z: Bill Gates, "Business @ the Speed of Thought"
 
-    
+
+//prefiksy
+
+
+//maszyny
+
+//'4400'-maszyny
+//'4410'-maszyny awarie
+//'4420'-maszyny relacje z user (odpowiedzialności itp)

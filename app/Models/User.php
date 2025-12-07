@@ -73,6 +73,14 @@ class User extends Authenticatable
     {
         return $this->hasMany(AddressEmployee::class);
     }
+    public function failureReports()
+    {
+        return $this->hasMany(FailureReport::class, 'reported_by');
+    }
+    public function machineResponsibilities()
+    {
+        return $this->hasMany(MachineResponsibility::class);
+    }
     //function
 
 
